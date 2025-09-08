@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Github, Linkedin, ExternalLink, ArrowRight, FileText, Mail, MapPin, Calendar, GraduationCap, BookOpen, ArrowLeft, Code, Zap, Globe, Database, Cpu, Shield } from 'lucide-react';
 
 const InteractiveTerminal = ({ scrollToSection }) => {
@@ -298,7 +299,7 @@ const InteractiveTerminal = ({ scrollToSection }) => {
         
         {isFocused && (
           <div className="text-xs text-zinc-600 mt-2">
-            Use ↑/↓ for history, Tab for autocomplete, 'help' for commands
+            Use ↑/↓ for history, Tab for autocomplete, &apos;help&apos; for commands
           </div>
         )}
       </div>
@@ -483,10 +484,11 @@ const TerminalProjectCard = ({ project, index, onViewDetails }) => {
 
       <div className="p-8 flex-1 flex flex-col">
         <div className="relative w-full h-56 overflow-hidden rounded-xl mb-6">
-          <img
+          <Image
             src={project.imageUrl}
             alt={`Screenshot of ${project.title}`}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
 
@@ -775,10 +777,11 @@ const ProjectDetail = ({ project, onBack }) => {
                     </div>
                   </div>
                   <div className="relative h-80 overflow-hidden">
-                    <img
+                    <Image
                       src={project.imageUrl}
                       alt={`Screenshot of ${project.title}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 </div>
@@ -1162,10 +1165,10 @@ const Portfolio = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-6 text-zinc-100">
-              Let's Build Something Amazing
+              Let&apos;s Build Something Amazing
             </h2>
             <p className="text-xl text-zinc-400">
-              Ready to bring your ideas to life? Let's connect and discuss your next project.
+              Ready to bring your ideas to life? Let&apos;s connect and discuss your next project.
             </p>
           </div>
           
@@ -1186,8 +1189,8 @@ const Portfolio = () => {
                 <div className="text-lg text-zinc-200 leading-relaxed">
                   <p className="text-cyan-400 font-mono mb-4">$ cat contact-info</p>
                   <p className="mb-4">
-                    I'm always interested in hearing about new opportunities and exciting projects. 
-                    Whether you're looking to build something from scratch or need help scaling an existing system.
+                    I&apos;m always interested in hearing about new opportunities and exciting projects. 
+                    Whether you&apos;re looking to build something from scratch or need help scaling an existing system.
                   </p>
                 </div>
                 
