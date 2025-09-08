@@ -112,7 +112,7 @@ const InteractiveTerminal = ({ scrollToSection }) => {
 
   useEffect(() => {
     // Typewriter effect for initial message
-    const welcomeMessage = "Hi! I'm Huda welcome to my portfolio. Type 'help' to explore.";
+    const welcomeMessage = "Hi! I&apos;m Huda welcome to my portfolio. Type &apos;help&apos; to explore.";
     setLines(['> cat welcome.txt']);
     
     let i = 0;
@@ -185,7 +185,7 @@ const InteractiveTerminal = ({ scrollToSection }) => {
     } else if (cmd === 'help') {
       setLines(prev => [...prev, commandOutput.help, '']);
     } else {
-      setLines(prev => [...prev, `command not found: ${command}. Type 'help' for available commands.`, '']);
+      setLines(prev => [...prev, `command not found: ${command}. Type &apos;help&apos; for available commands.`, '']);
     }
     
     setIsTyping(false);
