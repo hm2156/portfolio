@@ -1029,14 +1029,18 @@ const Portfolio = () => {
             </div>
             <div className="flex items-center space-x-4">
               <a 
-                href="#" 
+                href="https://github.com/hm2156" 
                 className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Github size={20} />
               </a>
               <a 
-                href="#" 
+                href="https://linkedin.com/in/huda-marta" 
                 className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Linkedin size={20} />
               </a>
