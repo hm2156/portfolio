@@ -787,10 +787,12 @@ const Hero = ({ profile }) => {
       id="hero"
       className="relative h-screen overflow-hidden bg-white text-gray-900"
       onTouchStart={(event) => {
+        event.preventDefault();
         setIsHovered(true);
         updateMaskFromTouch(event.touches[0]);
       }}
       onTouchMove={(event) => {
+        event.preventDefault();
         updateMaskFromTouch(event.touches[0]);
       }}
       onTouchEnd={() => setIsHovered(false)}
