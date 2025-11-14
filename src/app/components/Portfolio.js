@@ -175,6 +175,11 @@ const ProjectDetail = ({ project, onBack }) => {
   const [expandedImage, setExpandedImage] = useState(null);
   const [expandedTitle, setExpandedTitle] = useState('');
   const [carouselIndex, setCarouselIndex] = useState({});
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [project]);
 
   useEffect(() => {
     if (!expandedImage) return;
