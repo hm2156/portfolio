@@ -731,10 +731,23 @@ const Hero = ({ profile }) => {
   const { x = 0, y = 0 } = useMousePosition();
   const [maskPos, setMaskPos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const size = isHovered ? 320 : 100;
+  const [isMobile, setIsMobile] = useState(false);
+  const effectiveHover = isMobile ? true : isHovered;
+  const size = effectiveHover ? (isMobile ? 420 : 320) : 100;
 
   useEffect(() => {
-    if (!heroRef.current) return;
+    if (typeof window === 'undefined') return undefined;
+    const check = () => {
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      setIsMobile(coarse || window.innerWidth <= 768);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    if (!heroRef.current || isMobile) return undefined;
     const rect = heroRef.current.getBoundingClientRect();
     if (maskPos.x === 0 && maskPos.y === 0) {
       setMaskPos({ x: rect.width * 0.35, y: rect.height * 0.4 });
@@ -748,7 +761,22 @@ const Hero = ({ profile }) => {
     };
     raf = requestAnimationFrame(update);
     return () => cancelAnimationFrame(raf);
-  }, [x, y, maskPos.x, maskPos.y]);
+  }, [x, y, maskPos.x, maskPos.y, isMobile]);
+
+  useEffect(() => {
+    if (!isMobile || !heroRef.current) return undefined;
+    const handleScroll = () => {
+      const rect = heroRef.current.getBoundingClientRect();
+      const progress = Math.min(Math.max(-rect.top / rect.height, 0), 1);
+      setMaskPos({
+        x: rect.width / 2,
+        y: rect.height * (0.35 + 0.3 * progress),
+      });
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMobile]);
 
   const updateMaskFromTouch = (touch) => {
     if (!heroRef.current || !touch) return;
@@ -786,17 +814,25 @@ const Hero = ({ profile }) => {
       ref={heroRef}
       id="hero"
       className="relative h-screen overflow-hidden bg-white text-gray-900"
-      onTouchStart={(event) => {
-        event.preventDefault();
-        setIsHovered(true);
-        updateMaskFromTouch(event.touches[0]);
-      }}
-      onTouchMove={(event) => {
-        event.preventDefault();
-        updateMaskFromTouch(event.touches[0]);
-      }}
-      onTouchEnd={() => setIsHovered(false)}
-      onTouchCancel={() => setIsHovered(false)}
+      onTouchStart={
+        isMobile
+          ? undefined
+          : (event) => {
+              event.preventDefault();
+              setIsHovered(true);
+              updateMaskFromTouch(event.touches[0]);
+            }
+      }
+      onTouchMove={
+        isMobile
+          ? undefined
+          : (event) => {
+              event.preventDefault();
+              updateMaskFromTouch(event.touches[0]);
+            }
+      }
+      onTouchEnd={isMobile ? undefined : () => setIsHovered(false)}
+      onTouchCancel={isMobile ? undefined : () => setIsHovered(false)}
     >
       <motion.div
         className="absolute inset-0 pointer-events-none z-10"
