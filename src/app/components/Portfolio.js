@@ -2,1282 +2,919 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Github, Linkedin, ExternalLink, ArrowRight, FileText, Mail, MapPin, Calendar, GraduationCap, BookOpen, ArrowLeft, Code, Zap, Globe, Database, Cpu, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  Github,
+  Linkedin,
+  ExternalLink,
+  ArrowRight,
+  ArrowLeft,
+  Mail,
+  ChevronDown,
+  FileText,
+  ChevronUp,
+} from 'lucide-react';
+import useMousePosition from '../utils/useMousePosition';
+import AboutSection from './AboutSection';
+import ContactSection from './ContactSection';
 
-const InteractiveTerminal = ({ scrollToSection }) => {
-  const [lines, setLines] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef(null);
-  const terminalRef = useRef(null);
-  const [showCursor, setShowCursor] = useState(true);
-
-  const commandOutput = {
-    help: (
-      <div className="space-y-4 text-left">
-        <p className="text-cyan-400">portfolio {"<command>"}</p>
-        <p className="text-zinc-300">
-          Available commands:
-        </p>
-        <div className="pl-4 space-y-1 text-sm text-zinc-400">
-          <p><span className="text-cyan-400 font-mono">`whoami`</span> - Displays professional bio</p>
-          <p><span className="text-cyan-400 font-mono">`experience`</span> - Shows work experience</p>
-          <p><span className="text-cyan-400 font-mono">`education`</span> - View education details</p>
-          <p><span className="text-cyan-400 font-mono">`skills`</span> - List technical skills</p>
-          <p><span className="text-cyan-400 font-mono">`contact`</span> - Display contact information</p>
-          <p><span className="text-cyan-400 font-mono">`clear`</span> - Clear terminal output</p>
-        </div>
-        <p className="text-zinc-300">All commands:</p>
-        <div className="pl-4 space-y-1 text-sm text-zinc-400">
-          <p>
-            <span className="text-cyan-400 font-mono">about, whoami, experience, education, skills, contact, clear, help</span>
-          </p>
-        </div>
-        <p className="text-zinc-500">
-          Use `portfolio {"<command>"}` for specific info.
-        </p>
-      </div>
-    ),
-    about: (
-      <div className="space-y-3 text-left">
-        <p className="text-cyan-400">Loading profile...</p>
-        <div className="space-y-2">
-          <p className="text-zinc-200">Computer Science student at Columbia University with hands-on experience in full-stack development.</p>
-          <p className="text-zinc-300">Specialized in React ecosystems, backend systems, and cloud infrastructure through internships at YC companies.</p>
-        </div>
-        <p className="text-zinc-500 animate-pulse">Executing scroll-to-about.sh...</p>
-      </div>
-    ),
-    education: (
-      <div className="space-y-2 text-left">
-        <p className="text-cyan-400">Fetching academic records...</p>
-        <div className="space-y-2 pl-4">
-          <p className="text-zinc-200"><span className="text-cyan-400">Columbia University</span> - Bachelor of Science in Computer Science</p>
-          <p className="text-zinc-400">Sept 2021 - May 2025 | New York, NY</p>
-          <p className="text-zinc-300 text-sm">Relevant Coursework: Advanced Programming, Mobile iOS Development, Full-Stack Web Development, Databases, NLP, Distributed Systems, Cloud Computing</p>
-        </div>
-        <p className="text-zinc-500 animate-pulse">Executing scroll-to-about.sh...</p>
-      </div>
-    ),
-    experience: (
-      <div className="space-y-2 text-left">
-        <p className="text-cyan-400">Parsing work history...</p>
-        <p className="text-zinc-300">3 internship positions found</p>
-        <p className="text-zinc-500 animate-pulse">Executing scroll-to-about.sh...</p>
-      </div>
-    ),
-    skills: (
-      <div className="space-y-2 text-left">
-        <p className="text-cyan-400">Tech stack analysis:</p>
-        <div className="grid grid-cols-2 gap-2 text-sm pl-4">
-          <div><span className="text-cyan-400">Languages:</span> Python, JavaScript, TypeScript, Ruby</div>
-          <div><span className="text-cyan-400">Frontend:</span> React, Next.js, React Native</div>
-          <div><span className="text-cyan-400">Backend:</span> Node.js, Ruby on Rails, Firebase</div>
-          <div><span className="text-cyan-400">Cloud:</span> AWS, GCP, Docker, Kubernetes</div>
-          <div><span className="text-cyan-400">Databases:</span> PostgreSQL, MongoDB, Redis</div>
-          <div><span className="text-cyan-400">Tools:</span> GitHub Actions, Sentry, RSpec</div>
-        </div>
-      </div>
-    ),
-    contact: (
-      <div className="space-y-3 text-left">
-        <p className="text-cyan-400">Contact information:</p>
-        <div className="space-y-2 pl-4">
-          <div className="flex items-center space-x-2">
-            <Mail size={14} className="text-cyan-400" />
-            <a href="mailto:ham2167@columbia.edu" className="text-zinc-200 hover:text-cyan-400 transition-colors">
-              ham2167@columbia.edu
-            </a>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Github size={14} className="text-cyan-400" />
-            <a href="https://github.com/hm2156" className="text-zinc-200 hover:text-cyan-400 transition-colors">
-              github.com/hm2156
-            </a>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Linkedin size={14} className="text-cyan-400" />
-            <a href="https://linkedin.com/in/huda-marta" className="text-zinc-200 hover:text-cyan-400 transition-colors">
-              linkedin.com/in/huda-marta
-            </a>
-          </div>
-        </div>
-        <p className="text-zinc-500 animate-pulse">Executing scroll-to-contact.sh...</p>
-      </div>
-    ),
-  };
+const useIsVisible = (ref, threshold = 0.15) => {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Typewriter effect for initial message
-    const welcomeMessage = "Hi! I'm Huda welcome to my portfolio. Type 'help' to explore.";
-    setLines(['> cat welcome.txt']);
-    
-    let i = 0;
-    const typeInterval = setInterval(() => {
-      if (i < welcomeMessage.length) {
-        setLines(prev => [
-          '> cat welcome.txt',
-          welcomeMessage.substring(0, i + 1) + (i < welcomeMessage.length - 1 ? '▋' : '')
-        ]);
-        i++;
-      } else {
-        setLines(prev => [
-          '> cat welcome.txt',
-          welcomeMessage,
-          ''
-        ]);
-        clearInterval(typeInterval);
-      }
-    }, 40);
-
-    return () => clearInterval(typeInterval);
-  }, []);
-
-  useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    if (typeof window === 'undefined') return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      setVisible(true);
+      return;
     }
-  }, [lines]);
 
-  useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor(prev => !prev);
-    }, 530);
-    return () => clearInterval(cursorInterval);
-  }, []);
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold });
+    const node = ref.current;
+    if (node) observer.observe(node);
+    return () => node && observer.unobserve(node);
+  }, [ref, threshold]);
 
-  const handleCommand = async (command) => {
-    if (!command.trim()) return;
-    
-    setIsTyping(true);
-    
-    // Add command to history
-    setLines(prev => [...prev, `> ${command}`]);
-    
-    // Update command history
-    setHistory(prev => [...prev, command]);
-    setHistoryIndex(-1);
-    
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
-    const cmd = command.trim().toLowerCase();
-    
-    if (cmd === 'clear') {
-      setLines(['']);
-    } else if (cmd === 'about' || cmd === 'whoami') {
-      setLines(prev => [...prev, commandOutput.about, '']);
-      setTimeout(() => scrollToSection('about'), 500);
-    } else if (cmd === 'education') {
-      setLines(prev => [...prev, commandOutput.education, '']);
-      setTimeout(() => scrollToSection('about'), 500);
-    } else if (cmd === 'experience' || cmd === 'history') {
-      setLines(prev => [...prev, commandOutput.experience, '']);
-      setTimeout(() => scrollToSection('about'), 500);
-    } else if (cmd === 'skills') {
-      setLines(prev => [...prev, commandOutput.skills, '']);
-    } else if (cmd === 'contact' || cmd === 'connect') {
-      setLines(prev => [...prev, commandOutput.contact, '']);
-      setTimeout(() => scrollToSection('contact'), 500);
-    } else if (cmd === 'help') {
-      setLines(prev => [...prev, commandOutput.help, '']);
-    } else {
-      setLines(prev => [...prev, `command not found: ${command}. Type 'help' for available commands.`, '']);
-    }
-    
-    setIsTyping(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const command = inputValue.trim();
-      handleCommand(command);
-      setInputValue('');
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (history.length > 0) {
-        const newIndex = historyIndex === -1 ? history.length - 1 : Math.max(0, historyIndex - 1);
-        setInputValue(history[newIndex]);
-        setHistoryIndex(newIndex);
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIndex >= 0) {
-        const newIndex = historyIndex + 1;
-        if (newIndex >= history.length) {
-          setInputValue('');
-          setHistoryIndex(-1);
-        } else {
-          setInputValue(history[newIndex]);
-          setHistoryIndex(newIndex);
-        }
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const commands = ['help', 'about', 'whoami', 'experience', 'education', 'skills', 'contact', 'clear'];
-      const partial = inputValue.toLowerCase();
-      const matches = commands.filter(cmd => cmd.startsWith(partial));
-      if (matches.length === 1) {
-        setInputValue(matches[0]);
-      }
-    }
-  };
-
-  const handleTerminalClick = () => {
-    inputRef.current?.focus();
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-  };
-
-  return (
-    <div 
-      className={`bg-zinc-900 border-2 rounded-xl overflow-hidden shadow-2xl shadow-black/50 max-w-3xl mx-auto cursor-text transition-all duration-300 ${
-        isFocused ? 'border-cyan-400/50 shadow-cyan-400/20' : 'border-zinc-700 hover:border-zinc-600'
-      }`}
-      onClick={handleTerminalClick}
-    >
-      <div className="flex items-center px-6 py-4 bg-zinc-800 border-b border-zinc-700">
-        <div className="flex space-x-3">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-        </div>
-        <div className="flex-1 text-center text-sm font-mono text-zinc-400">
-          huda-portfolio-terminal
-        </div>
-        <div className="w-16 text-right text-xs text-zinc-500">
-          {isFocused ? 'active' : 'click to focus'}
-        </div>
-      </div>
-      
-      <div 
-        className="p-6 font-mono text-sm max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-800" 
-        ref={terminalRef}
-      >
-        {lines.map((line, index) => (
-          <div key={index} className="mb-1 text-left">
-            {typeof line === 'string' ? (
-              <span className={line.startsWith('>') ? "text-cyan-400" : "text-zinc-300"}>
-                {line}
-              </span>
-            ) : (
-              line
-            )}
-          </div>
-        ))}
-        
-        <div className="flex items-center mb-1 text-left">
-          <span className="text-cyan-400">{'>'} </span>
-          <input
-            ref={inputRef}
-            type="text"
-            className="flex-1 bg-transparent border-none outline-none text-zinc-200 caret-transparent ml-1"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            autoFocus
-            spellCheck="false"
-            disabled={isTyping}
-            placeholder={!isFocused ? "Click to start typing..." : ""}
-          />
-          {(showCursor && isFocused) && (
-            <span className="bg-cyan-400 text-zinc-900 ml-1 animate-pulse">█</span>
-          )}
-        </div>
-        
-        {isFocused && (
-          <div className="text-xs text-zinc-600 mt-2">
-            Use ↑/↓ for history, Tab for autocomplete, &apos;help&apos; for commands
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return visible;
 };
 
-const TimelineItem = ({ experience, index }) => {
-  const itemRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+const PillButton = ({ active = false, onClick, label, count }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+      active
+        ? 'bg-gray-900 text-white border-gray-900'
+        : 'text-gray-600 border-gray-200 hover:border-gray-300'
+    }`}
+  >
+    <span>{label}</span>
+    {typeof count === 'number' && <span className="ml-2 text-xs opacity-80">{count}</span>}
+  </button>
+);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.3 }
-    );
-    if (itemRef.current) observer.observe(itemRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div 
-      ref={itemRef} 
-      className={`relative flex items-start transition-all duration-700 ease-out ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-      }`}
-      style={{ transitionDelay: `${index * 150}ms` }}
-    >
-      <div className="flex-shrink-0 w-4 h-4 rounded-full bg-cyan-400 mt-1.5 z-10 shadow-lg shadow-cyan-400/50" />
-      <div className="ml-8 pb-12">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-xs text-cyan-400 font-mono px-2 py-1 bg-cyan-400/10 rounded border border-cyan-400/20">
-            {experience.date}
-          </span>
-        </div>
-        <h3 className="text-xl font-semibold text-zinc-100 mb-1">{experience.title}</h3>
-        <p className="text-zinc-200 font-medium mb-3">{experience.company}</p>
-        <p className="text-zinc-400 leading-relaxed">{experience.description}</p>
-      </div>
-    </div>
-  );
-};
-
-const TerminalSection = ({ title, filename, icon: Icon, children, className = "" }) => {
-  const containerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={containerRef}
-      className={`transition-all duration-700 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-      } ${className}`}
-    >
-      {/* Terminal Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-sm text-zinc-400">
-          <span className="text-cyan-400">$</span>
-          <span>cat {filename}</span>
-        </div>
-        <div className="h-px bg-zinc-800 flex-1" />
-      </div>
-      
-      {/* Section Title */}
-      <h3 className="text-2xl font-semibold mb-8 text-zinc-100 flex items-center gap-3">
-        {Icon && <Icon size={24} className="text-cyan-400" />}
-        {title}
-      </h3>
-      
-      {/* Content */}
-      {children}
-    </div>
-  );
-};
-
-const TerminalAboutText = ({ skills }) => {
-  return null; // This component is no longer used
-};
-
-const TerminalEducation = ({ education }) => {
-  return (
-    <TerminalSection title="Education" filename="transcript.txt" icon={GraduationCap}>
-      <div className="space-y-6">
-        <div className="relative p-6 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group">
-          <div className="absolute -left-1 top-6 w-2 h-2 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50" />
-          
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
-            <div>
-              <h4 className="text-xl font-semibold text-zinc-100 group-hover:text-white transition-colors">
-                Columbia University
-              </h4>
-              <p className="text-cyan-400 font-medium">Bachelor of Science in Computer Science</p>
-            </div>
-            <div className="text-right">
-              <span className="text-sm text-zinc-400 font-mono px-3 py-1 bg-zinc-800 rounded border border-zinc-700">
-                Sept 2021 - May 2025
-              </span>
-              <p className="text-sm text-zinc-500 mt-1">New York, NY</p>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <BookOpen size={16} className="text-cyan-400 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-zinc-400 mb-2">Relevant Coursework:</p>
-                <div className="flex flex-wrap gap-2">
-                  {education.courses.map((course, index) => (
+const PillTag = ({ children, dark = false }) => (
                     <span 
-                      key={index}
-                      className="text-xs px-3 py-1 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-full hover:border-cyan-400/30 transition-colors"
+    className={`px-2.5 py-1 text-xs rounded-full ${
+      dark ? 'border border-white/30 text-white/80' : 'border border-gray-200 text-gray-600'
+    }`}
                     >
-                      {course}
+    {children}
                     </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </TerminalSection>
-  );
-};
+);
 
-const TerminalExperience = ({ experiences }) => {
-  return (
-    <TerminalSection title="Work Experience" filename="internships.log" icon={Calendar}>
-      <div className="relative">
-        <div className="absolute left-2 top-0 bottom-0 w-px bg-zinc-800" />
-        <div className="space-y-0">
-          {experiences.map((exp, index) => (
-            <TimelineItem key={index} experience={exp} index={index} />
-          ))}
-        </div>
-      </div>
-    </TerminalSection>
-  );
-};
-
-const TerminalProjectCard = ({ project, index, onViewDetails }) => {
+const ProjectCard = ({ project, index, onSelect }) => {
   const cardRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    
-    if (cardRef.current) observer.observe(cardRef.current);
-    return () => observer.disconnect();
-  }, []);
+  const visible = useIsVisible(cardRef, 0.2);
+  const isQalamCover = project.title?.toLowerCase().includes('qalam');
+  const isTeaBrand = project.title?.toLowerCase().includes('tea brand');
+  const isKhadrat = project.title?.toLowerCase().includes('khadrat colombo');
 
   return (
-    <div
+    <article
       ref={cardRef}
-      className={`group relative flex flex-col rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden transition-all duration-700 hover:border-zinc-700 hover:bg-zinc-800/50 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+      className={`group rounded-3xl border border-white/12 bg-white/5 backdrop-blur overflow-hidden transition-all duration-500 ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
       }`}
-      style={{ transitionDelay: `${index * 150}ms` }}
+      style={{ transitionDelay: `${index * 80}ms` }}
     >
-      <div className="flex items-center px-6 py-4 bg-zinc-800 border-b border-zinc-700">
-        <div className="flex space-x-3">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-        </div>
-        <div className="flex-1 text-center text-sm font-mono text-zinc-400">
-          projects/{project.title.toLowerCase().replace(/\s+/g, '-')}.md
-        </div>
-      </div>
-
-      <div className="p-8 flex-1 flex flex-col">
-        <div className="relative w-full h-56 overflow-hidden rounded-xl mb-6">
+      <div className="flex flex-col">
+        <div
+          className={`relative rounded-3xl overflow-hidden border-b border-white/10 ${
+            isQalamCover
+              ? 'h-48 bg-white flex items-center justify-center'
+              : isKhadrat
+              ? 'h-40 flex items-center justify-center bg-[#61181c]'
+              : 'h-56'
+          } ${isTeaBrand && !isKhadrat ? 'bg-[#61181c]' : ''}`}
+        >
           <Image
             src={project.imageUrl}
             alt={`Screenshot of ${project.title}`}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className={`opacity-90 transition-transform duration-700 group-hover:scale-[1.02] ${
+              isQalamCover
+                ? 'object-contain p-4'
+                : isKhadrat
+                ? 'object-contain p-6'
+                : isTeaBrand
+                ? 'object-contain p-4'
+                : `object-cover ${project.title === 'Reading the Room' ? 'object-center' : 'object-top'}`
+            }`}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         </div>
-
-        <div className="space-y-4 flex-1">
+        <div className="p-6 lg:p-8 flex flex-col gap-6 text-white">
+          <div className="flex items-start justify-between gap-6">
           <div>
-            <h3 className="text-xl font-semibold text-zinc-200 group-hover:text-zinc-50 transition-colors duration-300 mb-2">
-              {project.title}
-            </h3>
-            <p className="text-zinc-400 leading-relaxed">{project.description}</p>
+              <p className="text-sm uppercase tracking-[0.55em] text-white/70 hero-heading">
+                {project.category} project
+              </p>
+              <h3 className="hero-heading text-4xl font-semibold">{project.title}</h3>
+            </div>
+            <span className="text-sm text-white/50">{project.year}</span>
           </div>
-
+          <p className="text-white/70 text-sm leading-relaxed">{project.description}</p>
           <div className="flex flex-wrap gap-2">
-            {project.tech.map((tech) => (
-              <span 
-                key={tech}
-                className="text-xs px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400 transition-all duration-300 group-hover:border-zinc-600 group-hover:text-zinc-300"
-              >
+            {project.tech.slice(0, 5).map((tech) => (
+              <PillTag key={tech} dark>
                 {tech}
-              </span>
+              </PillTag>
             ))}
           </div>
-
-          <div className="flex items-center justify-between mt-auto pt-6">
-            <div className="flex space-x-6">
-              <button 
-                onClick={() => onViewDetails(project)}
-                className="flex items-center space-x-2 text-zinc-500 hover:text-zinc-200 transition-colors duration-300 group/link"
-              >
-                <FileText size={16} className="group-hover/link:text-cyan-400 transition-colors" />
-                <span className="text-sm">View Details</span>
-              </button>
+          <div className="flex items-center justify-between pt-4 border-t border-white/10 text-sm mt-auto">
+            <div className="flex items-center gap-4">
+              {project.github && (
               <a 
                 href={project.github}
-                className="flex items-center space-x-2 text-zinc-500 hover:text-zinc-200 transition-colors duration-300 group/link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-white/70 hover:text-white"
               >
-                <Github size={16} className="group-hover/link:text-cyan-400 transition-colors" />
-                <span className="text-sm">Code</span>
+                  <Github size={16} />
+                  Code
               </a>
+              )}
+              {project.live && (
               <a 
                 href={project.live}
-                className="flex items-center space-x-2 text-zinc-500 hover:text-zinc-200 transition-colors duration-300 group/link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-white/70 hover:text-white"
               >
-                <ExternalLink size={16} className="group-hover/link:text-cyan-400 transition-colors" />
-                <span className="text-sm">Live Demo</span>
+                  <ExternalLink size={16} />
+                  Live
               </a>
+              )}
             </div>
-            <span className="text-xs text-zinc-600 font-mono">{project.year}</span>
+            <button
+              onClick={() => onSelect(project)}
+              className="inline-flex items-center gap-1 text-white/80 hover:text-white"
+            >
+              <FileText size={16} /> Details
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
 const ProjectDetail = ({ project, onBack }) => {
-  const containerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [expandedImage, setExpandedImage] = useState(null);
+  const [expandedTitle, setExpandedTitle] = useState('');
+  const [carouselIndex, setCarouselIndex] = useState({});
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 }
+    if (!expandedImage) return;
+    const onKey = (event) => {
+      if (event.key === 'Escape') setExpandedImage(null);
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [expandedImage]);
+
+  useEffect(() => {
+    if (!project?.featureSections) {
+      setCarouselIndex({});
+      return;
+    }
+    setCarouselIndex(
+      project.featureSections.reduce((acc, feature) => {
+        acc[feature.title] = 0;
+        return acc;
+      }, {})
     );
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+  }, [project]);
 
-  const getProjectDetails = (projectTitle) => {
-    const details = {
-      "DNS Explorer": {
-        overview: "DNS Explorer is a comprehensive full-stack web application that provides an interactive, visual demonstration of how DNS (Domain Name System) queries resolve from root servers down to final IP addresses. The application combines educational value with technical depth, making complex networking concepts accessible through animated visualizations.",
-        features: [
-          "Real-time animated DNS resolution flow visualization",
-          "Interactive hop-by-hop timing metrics and performance analysis",
-          "Step-by-step resolution narration with detailed explanations",
-          "Hop details modal displaying raw DNS records and response data",
-          "Performance dashboard with RTT (Round Trip Time) charts",
-          "Support for JSON input for offline DNS record inspection",
-          "Responsive design with fullscreen mode and mobile scrolling",
-          "Custom iterative DNS resolver with intelligent caching"
-        ],
-        technical: [
-          "Frontend built with React, Vite, and Framer Motion for smooth animations",
-          "Recharts library for interactive data visualizations and performance metrics",
-          "Backend implemented using FastAPI with Python for high-performance API",
-          "Custom DNS resolver using dnspython library with TTL caching",
-          "CORS configuration for seamless frontend-backend communication",
-          "Deployed on Vercel (frontend) and Render (backend) for optimal performance"
-        ],
-        challenges: [
-          "Implementing real-time packet flow visualization with accurate timing",
-          "Creating an intuitive user interface for complex networking concepts",
-          "Optimizing DNS resolution performance with intelligent caching strategies",
-          "Ensuring cross-platform compatibility and responsive design"
-        ]
-      },
-      "Daily Digest": {
-        overview: "Daily Digest is an AI-powered news aggregation platform that revolutionizes how users consume news by providing intelligent curation, sentiment analysis, and trend visualization. The application combines multiple APIs and machine learning to deliver personalized news experiences.",
-        features: [
-          "AI-powered news curation with global headline aggregation",
-          "Real-time category filtering and keyword search functionality",
-          "Sentiment analysis on headlines using advanced NLP techniques",
-          "Article summaries generated via Hugging Face API integration",
-          "Dynamic topic trend chart showing keyword frequency over 7 days",
-          "Responsive design with intuitive user interface",
-          "Local storage for user preferences and reading history"
-        ],
-        technical: [
-          "React with Vite for fast development and optimized builds",
-          "Tailwind CSS for responsive and modern UI design",
-          "Chart.js for interactive data visualizations and trend analysis",
-          "NewsAPI integration for real-time news data",
-          "Hugging Face API for AI-powered article summarization",
-          "localStorage for persistent user data and preferences"
-        ],
-        challenges: [
-          "Integrating multiple APIs while maintaining optimal performance",
-          "Implementing real-time sentiment analysis on dynamic content",
-          "Creating intuitive data visualizations for trend analysis",
-          "Optimizing API calls and managing rate limits effectively"
-        ]
-      },
-      "Reading the Room": {
-        overview: "Reading the Room is an interactive data storytelling project that analyzes presidential tweets to reveal patterns in communication styles, sentiment, and messaging across different administrations. The project combines data science with compelling visualizations to tell stories hidden in social media data.",
-        features: [
-          "Comprehensive analysis of presidential tweets across administrations",
-          "Sentiment analysis using VADER (Valence Aware Dictionary and sEntiment Reasoner)",
-          "Topic frequency analysis and keyword tracking over time",
-          "Interactive visualizations showing tone and messaging evolution",
-          "D3.js-powered charts for dynamic data exploration",
-          "Observable notebook integration for reproducible analysis",
-          "Plot library for statistical visualizations and trend analysis"
-        ],
-        technical: [
-          "Python for data processing and analysis pipeline",
-          "VADER sentiment analysis for accurate emotional tone detection",
-          "Observable platform for interactive data storytelling",
-          "D3.js for custom data visualizations and user interactions",
-          "Plot library for statistical analysis and trend visualization",
-          "Natural Language Processing techniques for text analysis"
-        ],
-        challenges: [
-          "Processing large datasets of social media content efficiently",
-          "Implementing accurate sentiment analysis on political communication",
-          "Creating meaningful visualizations from complex temporal data",
-          "Ensuring reproducibility and transparency in data analysis"
-        ]
-      },
-      "Inter-VLAN Routing Lab": {
-        overview: "The Inter-VLAN Routing Lab is a comprehensive networking project that demonstrates advanced VLAN configuration, inter-VLAN routing, and access control list (ACL) implementation. This hands-on lab showcases enterprise-level network design principles and security configurations.",
-        features: [
-          "Two-switch network topology with 4 VLANs (Finance, HR, Sales, IT)",
-          "Layer-3 switch configuration for inter-VLAN routing",
-          "Layer-2 switch setup with VLAN access and trunking",
-          "Access Control Lists (ACLs) for traffic flow management",
-          "PC-to-PC connectivity testing and verification",
-          "Comprehensive network documentation with diagrams",
-          "GitHub repository with detailed configuration files"
-        ],
-        technical: [
-          "Cisco Packet Tracer for network simulation and testing",
-          "VLAN configuration and management across multiple switches",
-          "Inter-VLAN routing implementation on Layer-3 switches",
-          "ACL configuration for security and traffic control",
-          "Network topology design and documentation",
-          "Configuration backup and version control practices"
-        ],
-        challenges: [
-          "Designing a scalable network topology with proper VLAN segmentation",
-          "Implementing complex ACL rules while maintaining network functionality",
-          "Troubleshooting connectivity issues across multiple VLANs",
-          "Documenting network configurations for reproducibility"
-        ]
-      }
-    };
-    return details[projectTitle] || {
-      overview: "Detailed project information coming soon.",
-      features: ["Feature documentation in progress"],
-      technical: ["Technical details being compiled"],
-      challenges: ["Challenge analysis underway"]
-    };
-  };
-
-  const projectDetails = getProjectDetails(project.title);
-
-  return (
-    <div 
-      ref={containerRef}
-      className={`min-h-screen bg-zinc-950 text-zinc-300 transition-all duration-700 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-      }`}
-    >
-      {/* Header */}
-      <div className="fixed top-0 left-0 w-full z-40 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <button 
-              onClick={onBack}
-              className="flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 transition-colors duration-300"
-            >
-              <ArrowLeft size={20} />
-              <span>Back to Portfolio</span>
-            </button>
-            <div className="text-lg font-semibold text-zinc-100">
-              {project.title}
-            </div>
-            <div className="flex items-center space-x-4">
-              <a 
-                href={project.github}
-                className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
-              >
-                <Github size={20} />
-              </a>
-              <a 
-                href={project.live}
-                className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
-              >
-                <ExternalLink size={20} />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="pt-20 px-6">
-        <div className="max-w-6xl mx-auto py-12">
-          
-          {/* Project Header */}
-          <div className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-sm text-zinc-400">
-                <span className="text-cyan-400">$</span>
-                <span>cat project-details.md</span>
-              </div>
-              <div className="h-px bg-zinc-800 flex-1" />
-            </div>
-            
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h1 className="text-4xl font-bold text-zinc-100 mb-6">{project.title}</h1>
-                <p className="text-xl text-zinc-300 leading-relaxed mb-8">{project.description}</p>
-                
-                <div className="flex flex-wrap gap-3 mb-8">
-                  {project.tech.map((tech) => (
-                    <span 
-                      key={tech}
-                      className="px-4 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-cyan-400/30 transition-colors"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex items-center space-x-6">
-                  <span className="text-sm text-zinc-500 font-mono">{project.year}</span>
-                  <div className="flex space-x-4">
-                    <a 
-                      href={project.github}
-                      className="flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 transition-colors"
-                    >
-                      <Github size={18} />
-                      <span>View Code</span>
-                    </a>
-                    <a 
-                      href={project.live}
-                      className="flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 transition-colors"
-                    >
-                      <ExternalLink size={18} />
-                      <span>Live Demo</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
-                  <div className="flex items-center px-6 py-4 bg-zinc-800 border-b border-zinc-700">
-                    <div className="flex space-x-3">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <div className="flex-1 text-center text-sm font-mono text-zinc-400">
-                      project-preview.png
-                    </div>
-                  </div>
-                  <div className="relative h-80 overflow-hidden">
-                    <Image
-                      src={project.imageUrl}
-                      alt={`Screenshot of ${project.title}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Project Details */}
-          <div className="space-y-16">
-            
-            {/* Overview */}
-            <TerminalSection title="Project Overview" filename="overview.md" icon={Globe}>
-              <div className="space-y-6">
-                <p className="text-zinc-200 leading-relaxed text-lg">
-                  {projectDetails.overview}
-                </p>
-              </div>
-            </TerminalSection>
-
-            {/* Features */}
-            <TerminalSection title="Key Features" filename="features.md" icon={Zap}>
-              <div className="grid md:grid-cols-2 gap-6">
-                {projectDetails.features.map((feature, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start space-x-3 p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
-                    <p className="text-zinc-300">{feature}</p>
-                  </div>
-                ))}
-              </div>
-            </TerminalSection>
-
-            {/* Technical Implementation */}
-            <TerminalSection title="Technical Implementation" filename="technical.md" icon={Code}>
-              <div className="space-y-6">
-                {projectDetails.technical.map((tech, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start space-x-3 p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors"
-                  >
-                    <Cpu size={16} className="text-cyan-400 mt-1 flex-shrink-0" />
-                    <p className="text-zinc-300">{tech}</p>
-                  </div>
-                ))}
-              </div>
-            </TerminalSection>
-
-            {/* Challenges & Solutions */}
-            <TerminalSection title="Challenges & Solutions" filename="challenges.md" icon={Shield}>
-              <div className="space-y-6">
-                {projectDetails.challenges.map((challenge, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start space-x-3 p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors"
-                  >
-                    <Database size={16} className="text-cyan-400 mt-1 flex-shrink-0" />
-                    <p className="text-zinc-300">{challenge}</p>
-                  </div>
-                ))}
-              </div>
-            </TerminalSection>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Portfolio = () => {
-  const [activeSection, setActiveSection] = useState('hero');
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [selectedProject, setSelectedProject] = useState(null);
-
-  const scrollToSection = (sectionId) => {
-    document.getElementById(sectionId)?.scrollIntoView({ 
-      behavior: 'smooth' 
+  const handleCarousel = (title, total, direction) => {
+    setCarouselIndex((prev) => {
+      const current = prev[title] || 0;
+      const nextIndex =
+        direction === 'next'
+          ? (current + 1) % total
+          : (current - 1 + total) % total;
+      return { ...prev, [title]: nextIndex };
     });
   };
 
-  const handleViewProjectDetails = (project) => {
-    setSelectedProject(project);
-  };
-
-  const handleBackToPortfolio = () => {
-    setSelectedProject(null);
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['hero', 'about', 'projects', 'contact'];
-      const scrollPosition = window.scrollY + window.innerHeight / 2;
-      
-      sections.forEach(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const offsetTop = element.offsetTop;
-          const height = element.offsetHeight;
-          
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + height) {
-            setActiveSection(section);
-          }
-        }
-      });
-    };
-
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  const experiences = [
-    {
-      title: "Software Engineering Intern",
-      company: "Sirdab — YC W23",
-      date: "June 2024 — Oct 2024",
-      description: "Engineered an expiry management system with Ruby on Rails and PostgreSQL, integrating Sidekiq for background jobs. Optimized inventory tracking, migrating 16,000+ SKU records. Developed SEO enhancement pipeline with Next.js, increasing organic traffic by 29%."
-    },
-    {
-      title: "Software Developer",
-      company: "Wacafe",
-      date: "Feb 2024 — May 2024", 
-      description: "Developed a React.js reservation app with TypeScript and TailwindCSS, reducing booking abandonment by 25%. Engineered backend infrastructure using Firebase, integrating Moyasar payment gateway and Apple Pay support."
-    },
-    {
-      title: "Software Engineering Intern",
-      company: "Piflow",
-      date: "July 2023 — Sept 2023",
-      description: "Created a financial management app using React Native, integrated Firebase for real-time data synchronization. Implemented D3.js for dynamic visualizations and optimized data processing with Firebase Cloud Functions."
-    }
-  ];
-
-  const education = {
-    university: "Columbia University",
-    degree: "Bachelor of Science in Computer Science",
-    period: "Sept 2021 - May 2025",
-    location: "New York, NY",
-    courses: [
-      "Advanced Programming",
-      "Mobile iOS Development", 
-      "Full-Stack Web Development",
-      "Databases",
-      "Natural Language Processing",
-      "Distributed Systems",
-      "Cloud Computing",
-      "Computer Networks",
-      "Data Structures & Algorithms"
-    ]
-  };
-
-  const projects = [
-    {
-      title: "DNS Explorer",
-      description: "A full-stack web application that visually demonstrates how DNS queries resolve step-by-step, from root servers down to final IP addresses. Features real-time animated visualization showing DNS packets moving between servers, hop-by-hop timing metrics, and resolution narration with responsive design.",
-      imageUrl: "/dns5.png",
-      tech: ["React", "Vite", "Framer Motion", "Recharts", "FastAPI", "Python", "dnspython"],
-      github: "https://github.com/hm2156/dns-explorer",
-      live: "https://dns-explorer.vercel.app/",
-      year: "2025"
-    },
-    {
-      title: "Daily Digest",
-      description: "An AI-powered news aggregator that curates global headlines with real-time category filtering, keyword search, sentiment analysis on headlines, article summaries via Hugging Face, and a dynamic topic trend chart showing keyword frequency over the past 7 days.",
-      imageUrl: "/dd8.png",
-      tech: ["React", "Vite", "Tailwind CSS", "Chart.js", "NewsAPI", "Hugging Face API", "localStorage"],
-      github: "https://github.com/hm2156/daily-digest",
-      live: "https://mydailydigest.vercel.app/",
-      year: "2025"
-    },
-    {
-      title: "Reading the Room",
-      description: "An interactive data storytelling project analyzing presidential tweets using sentiment analysis and topic frequency. Visualizes how tone and messaging changed across administrations using VADER, D3, and keyword tracking.",
-      imageUrl: "/rtr.png",
-      tech: ["Python", "VADER", "Observable", "D3.js", "Plot", "Natural Language Processing"],
-      github: "https://github.com/cpreston123/readingtheroom", 
-      live: "https://readingtheroom.info",
-      year: "2025"
-    },
-    {
-      title: "Inter-VLAN Routing Lab",
-      description: "Designed a comprehensive two-switch network topology with 4 VLANs (Finance, HR, Sales, IT) implementing inter-VLAN routing on a Layer-3 switch. Configured ACLs to control traffic flow between Finance and HR VLANs, allowing HR to reply while blocking Finance from initiating traffic. Verified connectivity through PC-to-PC ping tests and documented the lab with detailed diagrams and configurations.",
-      imageUrl: "/iv.png",
-      tech: ["Cisco Packet Tracer", "Network Configuration", "VLAN", "ACL", "Inter-VLAN Routing"],
-      github: "https://github.com/hm2156/intervlan-two-switches",
-      live: "https://github.com/hm2156/intervlan-two-switches",
-      year: "2024"
-    }
-  ];
-
-  const skills = [
-    "Python", "JavaScript", "TypeScript", "Ruby", "C/C++", "Golang",
-    "React.js", "Next.js", "React Native", "Node.js", "Ruby on Rails", 
-    "PostgreSQL", "MongoDB", "Firebase", "Redis", "AWS", "GCP", "Docker"
-  ];
-
-  // Show project detail page if a project is selected
-  if (selectedProject) {
-    return <ProjectDetail project={selectedProject} onBack={handleBackToPortfolio} />;
-  }
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-300 overflow-x-hidden font-sans">
-      {/* Subtle cursor effect */}
+    <>
+  <div className="min-h-screen bg-black text-white">
+    <header className="sticky top-0 z-30 bg-black/70 backdrop-blur border-b border-white/10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-between">
+        <button
+          onClick={() => {
+            onBack();
+            if (typeof window !== 'undefined') {
+              setTimeout(() => {
+                document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+              }, 50);
+            }
+          }}
+          className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm tracking-[0.3em] uppercase hero-heading"
+        >
+          ← Back
+        </button>
+        <div className="flex items-center gap-4 text-sm text-white/70">
+          {project.github && (
+            <a href={project.github} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              GitHub
+            </a>
+          )}
+          {project.live && (
+            <a href={project.live} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              Live
+            </a>
+          )}
+        </div>
+      </div>
+    </header>
+
+    <main className="max-w-5xl mx-auto px-4 sm:px-8 py-16 space-y-16">
+      <div className="space-y-6">
+        <p className="text-sm uppercase tracking-[0.5em] text-white/60 hero-heading">Case Study</p>
+        <div className="space-y-4">
+          <h1 className="hero-heading text-5xl sm:text-6xl font-semibold">{project.title}</h1>
+          <p className="text-white/75 text-lg leading-relaxed max-w-3xl">{project.description}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {project.tech.map((tech) => (
+            <PillTag key={tech} dark>
+              {tech}
+            </PillTag>
+          ))}
+        </div>
+      </div>
+
       <div
-        className="fixed top-0 left-0 z-50 pointer-events-none w-32 h-32 rounded-full bg-cyan-400/20 blur-3xl -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out"
-        style={{ 
-          transform: `translate(${mousePos.x}px, ${mousePos.y}px) translate(-50%, -50%)`
-        }}
-      />
+        className="relative w-full h-[420px] rounded-3xl overflow-hidden flex items-center justify-center p-6"
+        style={(() => {
+          if (project.heroImageBg) return { backgroundColor: project.heroImageBg };
+          if (['Inter-VLAN Routing Lab', 'Reading the Room', 'DNS Explorer'].includes(project.title)) {
+            return { backgroundColor: '#000000' };
+          }
+          if (project?.brandSummaryHeading === 'Saffron & Palm Tea House') {
+            return { backgroundColor: '#61181c' };
+          }
+          return { backgroundColor: '#ffffff' };
+        })()}
+      >
+        <Image
+          src={project.imageUrl}
+          alt={`Screenshot of ${project.title}`}
+          fill
+          className={`object-contain max-w-full ${
+            project?.brandSummaryHeading === 'Saffron & Palm Tea House' ? 'max-h-[85%]' : 'max-h-full'
+          }`}
+        />
+      </div>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 w-full z-40 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="text-lg font-semibold text-zinc-100">
-              Huda Marta
-            </div>
-            <div className="hidden md:flex space-x-8">
-              {['hero', 'about', 'projects', 'contact'].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
-                  className={`text-sm capitalize transition-all duration-300 relative ${
-                    activeSection === section 
-                      ? 'text-cyan-400' 
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  {section === 'hero' ? 'Home' : section}
-                  {activeSection === section && (
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-cyan-400 rounded-full" />
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center space-x-4">
-              <a 
-                href="https://github.com/hm2156" 
-                className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Github size={20} />
-              </a>
-              <a 
-                href="https://linkedin.com/in/huda-marta" 
-                className="text-zinc-400 hover:text-cyan-400 transition-colors duration-300"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Linkedin size={20} />
-              </a>
-            </div>
+      <section className="grid md:grid-cols-2 gap-8 text-sm">
+        <div className="space-y-4">
+          <h2 className="hero-heading text-lg font-semibold tracking-[0.3em] uppercase text-white/70">
+            Metadata
+          </h2>
+          <div className="space-y-2 text-white/70">
+            <p>
+              <span className="text-white/40 uppercase tracking-[0.4em] text-xs mr-3">Category</span>
+              {project.category}
+            </p>
+            <p>
+              <span className="text-white/40 uppercase tracking-[0.4em] text-xs mr-3">Year</span>
+              {project.year}
+            </p>
+            <p className="text-white/50">
+              Need more context? I can share private demos or artifacts on request.
+            </p>
+            <a
+              href={`mailto:${project?.contact || 'ham2167@columbia.edu'}`}
+              className="inline-flex items-center gap-2 text-white hover:text-white/80 font-medium"
+            >
+              <Mail size={16} /> Contact me about this project
+            </a>
           </div>
         </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section id="hero" className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="mb-16">
-            <InteractiveTerminal scrollToSection={scrollToSection} />
-          </div>
-          <div className="space-y-8">
-            <p className="text-xl text-zinc-300 leading-relaxed max-w-3xl mx-auto">
-              Specializing in <span className="text-cyan-400 font-semibold">full-stack development</span>, 
-              cloud infrastructure, and modern web technologies.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <button 
-                onClick={() => scrollToSection('projects')}
-                className="group flex items-center space-x-3 px-8 py-4 text-zinc-400 hover:text-zinc-200 font-medium rounded-xl  transition-all duration-300"
-              >
-                <span>View My Work</span>
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300 text-zinc-400 hover:text-zinc-200" />
-              </button>
-              <a 
-                href="mailto:ham2167@columbia.edu"
-                className="flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 transition-colors duration-300 px-6 py-4 rounded-xl "
-              >
-                <Mail size={18} />
-                <span>Get in Touch</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="py-32 px-6 border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold mb-6 text-zinc-100">
-              About Me
-            </h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-              Computer Science student passionate about building scalable solutions and learning cutting-edge technologies.
-            </p>
-          </div>
-          <div className="space-y-20">
-            {/* Three main sections - equal visual weight */}
-            <div className="grid lg:grid-cols-3 gap-12 xl:gap-16">
-              {/* About */}
-              <div className="lg:col-span-1">
-                <TerminalSection title="About" filename="profile.md">
-                  <div className="space-y-6">
-                    <p className="text-zinc-200 leading-relaxed">
-                      Computer Science student at Columbia University with hands-on experience in full-stack development 
-                      through internships at Y Combinator companies and tech startups.
-                    </p>
-                    <p className="text-zinc-300 leading-relaxed text-sm">
-                      Built systems handling <span className="text-cyan-400 font-semibold">16,000+ SKU records</span> and 
-                      developed applications that reduced booking abandonment by <span className="text-cyan-400 font-semibold">25%</span>.
-                    </p>
-                  </div>
-                </TerminalSection>
-              </div>
-              
-              {/* Education */}
-              <div className="lg:col-span-1">
-                <TerminalEducation education={education} />
-              </div>
-              
-              {/* Experience */}
-              <div className="lg:col-span-1">
-                <TerminalExperience experiences={experiences} />
-              </div>
-            </div>
-            
-            {/* Tech Stack - full width section */}
-            <div className="max-w-5xl mx-auto">
-              <TerminalSection title="Tech Stack" filename="skills.json">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {skills.map((skill) => (
-                    <div 
-                      key={skill}
-                      className="px-4 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-300 transition-all duration-300 hover:border-cyan-400 hover:text-zinc-100 hover:bg-zinc-800 text-center"
-                    >
-                      {skill}
-                    </div>
-                  ))}
-                </div>
-              </TerminalSection>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Projects Section */}
-      <section id="projects" className="py-32 px-6 border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold mb-6 text-zinc-100">
-              Featured Projects
-            </h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-              A selection of my recent work showcasing different technologies and approaches.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <TerminalProjectCard 
-                key={project.title} 
-                project={project} 
-                index={index} 
-                onViewDetails={handleViewProjectDetails}
-              />
+        <div className="space-y-4">
+          <h2 className="hero-heading text-lg font-semibold tracking-[0.3em] uppercase text-white/70">
+            Stack & tooling
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {project.tech.map((tech) => (
+              <PillTag key={tech} dark>
+                {tech}
+              </PillTag>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-32 px-6 border-t border-zinc-800">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6 text-zinc-100">
-              Let&apos;s Build Something Amazing
-            </h2>
-            <p className="text-xl text-zinc-400">
-              Ready to bring your ideas to life? Let&apos;s connect and discuss your next project.
-            </p>
-          </div>
-          
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
-            <div className="flex items-center px-6 py-4 bg-zinc-800 border-b border-zinc-700">
-              <div className="flex space-x-3">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          {project.brandSummary && (
+            <section className="grid gap-8 md:grid-cols-[1.1fr,0.9fr] items-center">
+              <div className="space-y-4">
+                <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">
+                  Brand story
+                </p>
+                <h3 className="hero-heading text-3xl font-semibold">{project.brandSummaryHeading || 'Tea House System'}</h3>
+                <p className="text-white/75 leading-relaxed">{project.brandSummary}</p>
               </div>
-              <div className="flex-1 text-center text-sm font-mono text-zinc-400">
-                contact/info.txt
+            </section>
+          )}
+
+          {project.colorPalette && (
+            <section className="space-y-6">
+              <div className="flex flex-col gap-2">
+                <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">Color palette</p>
+                <h3 className="hero-heading text-2xl font-semibold">
+                  {project.colorPaletteTitle || 'Black Tea Tones'}
+                </h3>
               </div>
-            </div>
-            
-            <div className="p-8">
-              <div className="space-y-8">
-                <div className="text-lg text-zinc-200 leading-relaxed">
-                  <p className="text-cyan-400 font-mono mb-4">$ cat contact-info</p>
-                  <p className="mb-4">
-                    I&apos;m always interested in hearing about new opportunities and exciting projects. 
-                    Whether you&apos;re looking to build something from scratch or need help scaling an existing system.
+              <div className="flex flex-wrap gap-6">
+                {project.colorPalette.map((swatch) => (
+                  <div
+                    key={`${swatch.hex}-${swatch.name}`}
+                    className="flex flex-col items-center text-center gap-3 max-w-[160px]"
+                  >
+                    <span
+                      className="h-20 w-20 rounded-full border border-white/10 shadow-lg"
+                      style={{ backgroundColor: swatch.hex }}
+                    />
+                    <div className="space-y-1">
+                      {swatch.name && (
+                        <span className="block text-white/60 text-xs uppercase tracking-[0.25em]">{swatch.name}</span>
+                      )}
+                      <span className="text-white/90 text-sm font-medium">{swatch.hex}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {project.typographyImages && (
+            <section className="space-y-6">
+              <div className="flex flex-col gap-2">
+                <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">Typography</p>
+                <h3 className="hero-heading text-2xl font-semibold">Letterforms for Ritual</h3>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                {project.typographyImages.map((type) => (
+                  <div
+                    key={type.label}
+                    className="rounded-3xl border border-white/10 bg-[#61181c] p-6 flex flex-col gap-4 items-center"
+                  >
+                    <span className="text-white/80 uppercase tracking-[0.3em] text-xs">{type.label}</span>
+                    <div className="relative w-full h-52">
+                      <Image
+                        src={type.src}
+                        alt={type.label}
+                        fill
+                        className="object-contain drop-shadow-xl"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {project.patterns && (
+            <section className="space-y-6">
+              <div className="flex flex-col gap-2">
+                <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">Patterns</p>
+                <h3 className="hero-heading text-2xl font-semibold">Tabletop stories</h3>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                {project.patterns.map((pattern) => (
+                  <div key={pattern.label} className="rounded-3xl border border-white/10 overflow-hidden bg-white/5">
+                    <div className="p-4 flex items-center justify-between text-white/80 text-sm uppercase tracking-[0.3em]">
+                      <span>{pattern.label}</span>
+                      <span>Textile study</span>
+                    </div>
+                    <div className="relative w-full h-72 bg-white">
+                      <Image src={pattern.src} alt={pattern.label} fill className="object-cover" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {project.brandElements && (
+            <section className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">Brand elements</p>
+                <h3 className="hero-heading text-2xl font-semibold">{project.brandElementsHeading}</h3>
+                <p className="text-white/75 leading-relaxed">{project.brandElements}</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {project.elementImages?.map((element) => (
+                  <div
+                    key={element}
+                    className="rounded-3xl border border-white/10 bg-[#fff5e1] overflow-hidden flex items-center justify-center p-4"
+                  >
+                    <div className="relative w-full h-40">
+                      <Image src={element} alt="Hijazi element" fill className="object-contain" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+      {project.featureSections && (
+        <section className="space-y-10">
+          <h2 className="hero-heading text-3xl font-semibold">Feature tour</h2>
+          <div className="space-y-10">
+                {project.featureSections.map((feature, idx) => {
+                  const imageFirst = feature.forceTextFirst ? false : idx % 2 !== 0;
+
+                  return (
+              <div
+                key={feature.title}
+                className={`grid gap-6 items-center ${
+                  idx % 2 === 0 ? 'md:grid-cols-[1.1fr,0.9fr]' : 'md:grid-cols-[0.9fr,1.1fr]'
+                }`}
+              >
+                      <div className={`${imageFirst ? 'md:order-2' : ''} space-y-3`}>
+                  <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">
+                    Feature {idx + 1}
                   </p>
+                  <h3 className="hero-heading text-2xl font-semibold">{feature.title}</h3>
+                  <p className="text-white/70 leading-relaxed">{feature.description}</p>
                 </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="flex items-center space-x-4 p-4 rounded-xl bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-colors group">
-                      <div className="p-3 rounded-lg bg-cyan-500/10 text-cyan-400">
-                        <Mail size={20} />
+                      <div className={`${imageFirst ? 'md:order-1' : ''} rounded-2xl border border-white/10 bg-white/5 p-4`}>
+                        <div className="flex items-center gap-4 justify-center">
+                          <button
+                            type="button"
+                            onClick={() => handleCarousel(feature.title, feature.images.length, 'prev')}
+                            disabled={feature.images.length <= 1}
+                            className="p-3 rounded-full border border-white/10 text-white/70 hover:text-white disabled:opacity-30"
+                            aria-label={`Previous ${feature.title} screenshot`}
+                          >
+                            <ArrowLeft size={18} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExpandedImage(feature.images[carouselIndex[feature.title] || 0]);
+                              setExpandedTitle(feature.title);
+                            }}
+                            className="relative w-full max-w-2xl h-72 md:h-80 rounded-3xl border border-white/10 bg-white overflow-hidden flex items-center justify-center group"
+                            aria-label={`Expand ${feature.title} screenshot`}
+                          >
+                    <Image
+                              src={feature.images[carouselIndex[feature.title] || 0]}
+                      alt={feature.title}
+                              width={1400}
+                              height={850}
+                              className="w-full h-full object-contain"
+                            />
+                            <span className="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-opacity duration-200" />
+                            <span className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.35em] uppercase text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              Tap to expand
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCarousel(feature.title, feature.images.length, 'next')}
+                            disabled={feature.images.length <= 1}
+                            className="p-3 rounded-full border border-white/10 text-white/70 hover:text-white disabled:opacity-30"
+                            aria-label={`Next ${feature.title} screenshot`}
+                          >
+                            <ArrowRight size={18} />
+                          </button>
+                        </div>
+                        {feature.images.length > 1 && (
+                          <p className="text-center text-xs uppercase tracking-[0.35em] text-white/60 mt-4">
+                            {String((carouselIndex[feature.title] || 0) + 1).padStart(2, '0')} /{' '}
+                            {String(feature.images.length).padStart(2, '0')}
+                          </p>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-sm text-zinc-400">Email</p>
-                        <a href="mailto:ham2167@columbia.edu" className="text-zinc-200 hover:text-cyan-400 transition-colors">
-                          ham2167@columbia.edu
-                        </a>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 p-4 rounded-xl bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-colors group">
-                      <div className="p-3 rounded-lg bg-cyan-500/10 text-cyan-400">
-                        <MapPin size={20} />
-                      </div>
-                      <div>
-                        <p className="text-sm text-zinc-400">Location</p>
-                        <p className="text-zinc-200">Jeddah, KSA</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <p className="text-zinc-400 text-sm mb-4">Connect with me:</p>
-                    <div className="flex flex-col space-y-3">
-                      <a 
-                        href="https://github.com/hm2156" 
-                        className="flex items-center space-x-3 text-zinc-400 hover:text-zinc-200 transition-colors duration-300 group p-3 rounded-lg hover:bg-zinc-800"
-                      >
-                        <Github size={18} className="text-zinc-500 group-hover:text-cyan-400 transition-colors" />
-                        <span>github.com/hm2156</span>
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </a>
-                      <a 
-                        href="https://linkedin.com/in/huda-marta" 
-                        className="flex items-center space-x-3 text-zinc-400 hover:text-zinc-200 transition-colors duration-300 group p-3 rounded-lg hover:bg-zinc-800"
-                      >
-                        <Linkedin size={18} className="text-zinc-500 group-hover:text-cyan-400 transition-colors" />
-                        <span>linkedin.com/in/huda-marta</span>
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </a>
-                      <a 
-                        href="/resume.pdf" 
-                        download="Huda_Marta_Resume.pdf"
-                        className="flex items-center space-x-3 text-zinc-400 hover:text-zinc-200 transition-colors duration-300 group p-3 rounded-lg hover:bg-zinc-800"
-                      >
-                        <FileText size={18} className="text-zinc-500 group-hover:text-cyan-400 transition-colors" />
-                        <span>Download Resume</span>
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </a>
-                    </div>
-                  </div>
                 </div>
-              </div>
+                  );
+                })}
+          </div>
+        </section>
+      )}
+
+      <section className="space-y-6">
+        <h2 className="hero-heading text-3xl font-semibold">Highlights</h2>
+        <ul className="space-y-4 text-white/75 leading-relaxed">
+          {(project.detailPoints || ['Detailed write-up coming soon.']).map((point) => (
+            <li key={point} className="pl-5 border-l border-white/20">{point}</li>
+          ))}
+        </ul>
+      </section>
+    </main>
+  </div>
+
+      {expandedImage && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur flex flex-col items-center justify-center px-4">
+          <button
+            type="button"
+            onClick={() => setExpandedImage(null)}
+            className="self-end text-white/70 hover:text-white uppercase tracking-[0.35em] text-xs mb-4"
+          >
+            Close ×
+          </button>
+          <div className="relative w-full max-w-5xl h-[70vh] rounded-3xl border border-white/20 bg-white overflow-hidden">
+            <Image
+              src={expandedImage}
+              alt={expandedTitle || 'Expanded screenshot'}
+              fill
+              className="object-contain"
+              sizes="(max-width: 1024px) 90vw, 70vw"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+  const projects = [
+    {
+    title: 'Qalam — Arabic Publishing Platform',
+    description:
+      'Qalam is an Arabic-first writing and publishing platform inspired by classic literary salons. It combines a distraction-free editor, personalized feeds, and author tools tailored to right-to-left storytelling. The name “Qalam” nods to the Arabic word for pen—the original interface for ideas.',
+    imageUrl: '/qalam-logo.png',
+    tech: ['Next.js', 'Tailwind CSS', 'Supabase', 'TipTap', 'Edge Functions'],
+    year: '2025',
+    category: 'Dev',
+    live: 'https://qalamm.com/',
+    github: 'https://github.com/hm2156/qalam',
+    detailPoints: [
+      'Custom RTL-aware editor with drafting, autosave, and publishing flows',
+      'Personalized reading feed with follow graph + topic curation in Arabic',
+      'Author dashboards for notifications, profile curation, and analytics-lite stats',
+    ],
+    featureSections: [
+      {
+        title: 'Explore & interact',
+        description:
+          'A curated Arabic feed surfaces essays, poetry, and opinions with a typography system tuned for readability. Readers can like, comment, and follow authors directly from the stream.',
+        images: ['/qalam-expore.png', '/qalam-comments.png'],
+      },
+      {
+        title: 'Writing studio',
+        description:
+          'A TipTap-based editor respects RTL input, custom callouts, references, and in-line diacritics. Drafts autosave, and publishing includes tags, cover selection, and preview links.',
+        forceTextFirst: true,
+        images: ['/qalam-publish.png'],
+      },
+      {
+        title: 'Author profiles & following',
+        description:
+          'Each writer gets a profile with featured pieces, social links, and a follow CTA. Readers can explore author libraries, follow them, and comment in-thread with rich text replies.',
+        images: ['/qalam-authorpagefollowwtc.png'],
+      },
+      {
+        title: 'Notifications & settings',
+        description:
+          'Author dashboards summarize reads, reactions, and follower growth. A settings hub lets writers tweak newsletters, notification cadence, and Arabic/English UI toggles.',
+        forceTextFirst: true,
+        images: ['/qalam-dashboard.png', '/qalam-profilesettings.png'],
+      },
+    ],
+  },
+  {
+    title: 'DNS Explorer',
+    description: 'Interactive DNS resolver visualizer bridging infrastructure and education with real-time storytelling.',
+    imageUrl: '/dns5.png',
+    tech: ['React', 'FastAPI', 'Framer Motion', 'dnspython'],
+    github: 'https://github.com/hm2156/dns-explorer',
+    live: 'https://dns-explorer.vercel.app/',
+    year: '2025',
+    category: 'Dev',
+    detailPoints: [
+      'Animated resolver map tracking each hop with latency overlays',
+      'Custom FastAPI resolver with caching for deterministic demos',
+      'Designed for classroom walkthroughs and self-paced learning',
+    ],
+  },
+  {
+    title: 'Daily Digest',
+    description: 'AI-powered news companion featuring sentiment analysis, topic trends, and adaptive reading modes.',
+    imageUrl: '/dd8.png',
+    tech: ['React', 'Tailwind', 'NewsAPI', 'Hugging Face'],
+    github: 'https://github.com/hm2156/daily-digest',
+    live: 'https://mydailydigest.vercel.app/',
+    year: '2025',
+    category: 'Dev',
+    detailPoints: [
+      'Semantic filters, offline reading list, and rapid search',
+      'Hugging Face inference for summarization and tone detection',
+      'Chart.js visualizations surface seven-day topic velocity',
+    ],
+  },
+  {
+    title: 'Reading the Room',
+    description: 'Presidential tweet analysis blending NLP, journalism, and tactile visualization.',
+    imageUrl: '/rtr.png',
+    tech: ['Python', 'VADER', 'D3.js', 'Observable'],
+    github: 'https://github.com/cpreston123/readingtheroom',
+    live: 'https://readingtheroom.info',
+    year: '2025',
+    category: 'Dev',
+    detailPoints: [
+      'VADER sentiment pipeline seeded from archival data',
+      'Observable notebooks for reproducible data storytelling',
+      'Comparative tone clustering across administrations',
+    ],
+  },
+  {
+    title: 'Inter-VLAN Routing Lab',
+    description: 'Packet-tracer lab documenting VLAN design, routing, and ACL policies for Finance ↔ HR segmentation.',
+    imageUrl: '/iv.png',
+    tech: ['Cisco Packet Tracer', 'Networking', 'ACL'],
+    github: 'https://github.com/hm2156/intervlan-two-switches',
+    live: 'https://github.com/hm2156/intervlan-two-switches',
+    year: '2024',
+    category: 'Dev',
+  },
+  {
+    title: 'Khadrat Colombo Brand Identity',
+    description: 'Visual identity for a Hijazi black-tea house, blending heirloom rituals with modern hospitality cues.',
+    imageUrl: '/mainlogowithtext.png',
+    tech: ['Brand Identity', 'Graphic Design', 'Illustration', 'Adobe Illustrator'],
+    category: 'Design',
+    detailPoints: [
+      'Crafted a bilingual logo suite for packaging, retail, and merch',
+      'Codified palette + typography to balance warmth with premium cues',
+      'Documented iconography inspired by Hijazi architecture and glassware',
+    ],
+    brandSummaryHeading: 'Khadrat Colombo',
+    brandSummary:
+      'This brand identity was created to honor my mother’s cherished black-tea blend, transforming a family treasure into a heartfelt commercial brand. The design system draws deeply from Hijazi architectural elements—geometric patterns, warm earth tones, and the interplay of light and shadow—while the naming and storytelling reflect the personal heritage and hospitality at the brand’s core.',
+    brandMarkImage: '/brandmark.png',
+    brandMarkBg: '#efbd80',
+    heroImageBg: '#61181c',
+    colorPaletteTitle: 'Black Tea Tones',
+    colorPalette: [
+      {
+        name: 'Mashrabiyyah Morning',
+        hex: '#fff4e3',
+        description:
+          'The soft, filtered light that streams through carved wooden screens at dawn, when the world is quiet and the first pot of tea is brewing.',
+      },
+      {
+        name: 'Desert Sun',
+        hex: '#efbd80',
+        description:
+          'The golden warmth of afternoon light on sandstone walls, reminiscent of the welcoming glow of gathering spaces.',
+      },
+      {
+        name: 'Copper Glow',
+        hex: '#c46d28',
+        description:
+          'Rich and inviting, like the burnished copper of traditional tea serving vessels—a color that speaks of quality and craft.',
+      },
+      {
+        name: 'Pomegranate Heart',
+        hex: '#a4272e',
+        description:
+          'Deep, vibrant, and full of life— inspired by the jeweled fruit that adorns our gatherings and symbolizes abundance.',
+      },
+      {
+        name: 'Red Tea Heart',
+        hex: '#771213',
+        description:
+          'The deep, lustrous color of the tea itself—warm and unmistakable, the signature hue of my mother’s blend.',
+      },
+      {
+        name: 'Palm Grove',
+        hex: '#174632',
+        description:
+          'The cool, shaded green of palm fronds in Hijazi courtyards, offering respite and moments of calm.',
+      },
+      {
+        name: 'Evening Garden',
+        hex: '#0c291f',
+        description:
+          'The deepest green of night gardens, where conversations continue under the stars and tea is poured one last time.',
+      },
+    ],
+    typographyImages: [
+      { label: 'Display serif', src: '/typography-header.png' },
+      { label: 'Body grotesk', src: '/typography-body.png' },
+    ],
+    patterns: [
+      { label: 'Pattern 01', src: '/pattern1.png' },
+      { label: 'Pattern 02', src: '/patternmain.png' },
+    ],
+    brandElementsHeading: 'Brand Elements – Inspired by Hijazi Architecture',
+    brandElements:
+      'Our icons reimagine the geometric patterns, arches, and palm motifs of traditional Hijazi architecture in a modern, minimal style. Each element reflects the warmth of our heritage—from carved mashrabiyyah panels to the iconic tea glass—telling a story of hospitality, community, and timeless flavor.',
+    elementImages: ['/e1.png', '/e2.png', '/e3.png', '/e4.png', '/e5.png', '/e6.png', '/e7.png', '/e8.png', '/e9.png', '/e10.png', '/e11.png'],
+  },
+  ];
+
+  const skills = [
+  'JavaScript',
+  'TypeScript',
+  'Python',
+  'Ruby',
+  'React',
+  'Next.js',
+  'FastAPI',
+  'Rails',
+  'PostgreSQL',
+  'Tailwind CSS',
+  'Framer Motion',
+  'AWS',
+];
+
+const Hero = ({ profile }) => {
+  const heroRef = useRef(null);
+  const { x = 0, y = 0 } = useMousePosition();
+  const [maskPos, setMaskPos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const size = isHovered ? 320 : 100;
+
+  useEffect(() => {
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    if (maskPos.x === 0 && maskPos.y === 0) {
+      setMaskPos({ x: rect.width * 0.35, y: rect.height * 0.4 });
+    }
+    let raf;
+    const update = () => {
+      setMaskPos({
+        x: x - rect.left,
+        y: y - rect.top,
+      });
+    };
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [x, y, maskPos.x, maskPos.y]);
+
+  const renderHeroCopy = (inverted = false, handlers = {}) => {
+    const labelColor = inverted ? 'text-white/70' : 'text-gray-400';
+    const headingColor = inverted ? 'text-white' : 'text-gray-900';
+    const bodyColor = inverted ? 'text-white/80' : 'text-gray-600';
+    return (
+      <div className={`space-y-6 ${inverted ? 'mix-blend-difference text-white' : ''}`} {...handlers}>
+        <div className={`flex items-center gap-3 text-sm uppercase tracking-[0.3em] font-medium ${inverted ? 'text-white/80' : 'text-gray-700'}`}>
+          <span>Portfolio</span>
+          <span>•</span>
+          <span>{new Date().getFullYear()}</span>
+        </div>
+        <p className={`text-sm uppercase tracking-[0.4em] font-medium ${labelColor}`}>Huda Marta</p>
+        <h1 className={`hero-heading text-6xl sm:text-7xl lg:text-8xl font-semibold leading-tight max-w-4xl ${headingColor}`}>
+          Hi, I&apos;m Huda.
+        </h1>
+        <p className={`text-lg sm:text-xl max-w-3xl leading-relaxed ${bodyColor}`}>
+          I&apos;m a developer who sometimes designs, or maybe a designer who won&apos;t stop coding. Either way, here&apos;s some of my work.
+        </p>
+      </div>
+    );
+  };
+
+  return (
+    <section
+      ref={heroRef}
+      id="hero"
+      className="relative h-screen overflow-hidden bg-white text-gray-900"
+    >
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{ 
+          backgroundColor: '#050505',
+          WebkitMaskImage: "url('/mask.svg')",
+          maskImage: "url('/mask.svg')",
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+        }}
+        animate={{
+          WebkitMaskPosition: `${maskPos.x - size / 2}px ${maskPos.y - size / 2}px`,
+          maskPosition: `${maskPos.x - size / 2}px ${maskPos.y - size / 2}px`,
+          WebkitMaskSize: `${size}px`,
+          maskSize: `${size}px`,
+        }}
+        transition={{ type: 'tween', ease: 'backOut', duration: 0.4 }}
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 flex items-center justify-center px-6">
+          <div className="max-w-5xl w-full">
+            {renderHeroCopy(true)}
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="absolute inset-0 flex items-center justify-center px-6">
+        <div className="max-w-5xl w-full">
+          {renderHeroCopy(false, {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          })}
+        </div>
+          </div>
+
+      <div className="absolute bottom-10 inset-x-0 z-10 flex justify-center">
+              <button 
+          onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+          className="text-gray-500 hover:text-gray-900 animate-bounce"
+          aria-label="Scroll to about"
+              >
+          <ChevronDown size={32} />
+              </button>
+        </div>
+      </section>
+  );
+};
+
+
+const CategoryToggle = ({ selected, onChange, counts }) => (
+// ... (CategoryToggle remains the same)
+  <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 p-1 text-sm font-medium backdrop-blur">
+    {['Dev', 'Design'].map((option) => {
+      const active = selected === option;
+      return (
+        <button
+          key={option}
+          onClick={() => onChange(option)}
+          className={`relative px-4 py-1.5 transition-all ${
+            active ? 'text-black' : 'text-white/70'
+          }`}
+        >
+          <span
+            className={`absolute inset-0 rounded-full transition ${
+              active ? 'bg-white text-black shadow-sm' : 'bg-transparent'
+            }`}
+          />
+          <span className="relative z-10 flex items-center gap-2">
+            {option}
+            <span className="text-xs">
+              {typeof counts[option] === 'number' ? counts[option] : 0}
+            </span>
+          </span>
+        </button>
+      );
+    })}
+                    </div>
+);
+
+const Portfolio = () => {
+  const profile = {
+    name: 'Huda Marta',
+    email: 'ham2167@columbia.edu',
+    github: 'https://github.com/hm2156',
+    linkedin: 'https://linkedin.com/in/huda-marta',
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState('Dev');
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const counts = projects.reduce((acc, curr) => {
+    acc[curr.category] = (acc[curr.category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const filtered = projects.filter((p) => p.category === selectedCategory);
+
+  if (selectedProject) {
+    return <ProjectDetail project={selectedProject} onBack={() => setSelectedProject(null)} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      <Hero profile={profile} />
+
+      <AboutSection />
+
+      <section id="projects" className="pt-40 pb-32 px-6 bg-black text-white">
+        <div className="max-w-6xl mx-auto space-y-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="space-y-3">
+              <p className="text-sm uppercase tracking-[0.5em] text-white/60 hero-heading">Selected work</p>
+              <h2 className="hero-heading text-6xl sm:text-7xl font-semibold">{selectedCategory} Projects</h2>
+                </div>
+            <div className="text-sm text-white">
+              <CategoryToggle selected={selectedCategory} onChange={setSelectedCategory} counts={counts} />
             </div>
+          </div>
+
+          <div className="grid gap-12">
+            {filtered.map((project, index) => (
+              <ProjectCard key={project.title} project={project} index={index} onSelect={setSelectedProject} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-zinc-500 space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-2">
-              <span>© 2024 Huda Marta</span>
-              <span className="text-zinc-700">•</span>
-              <span>Built with passion and coffee ☕</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span>Powered by</span>
-              <span className="text-cyan-400">Next.js</span>
-              <span className="text-zinc-700">•</span>
-              <span className="text-cyan-400">Tailwind CSS</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <ContactSection profile={profile} />
+
+
+
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Back to top"
+        className="fixed bottom-4 right-4 z-40 inline-flex items-center justify-center h-10 w-10 rounded-full border border-gray-300 bg-white text-gray-700 shadow-lg hover:bg-gray-50"
+      >
+        <ChevronUp size={18} />
+      </button>
     </div>
   );
 };
