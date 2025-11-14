@@ -750,6 +750,15 @@ const Hero = ({ profile }) => {
     return () => cancelAnimationFrame(raf);
   }, [x, y, maskPos.x, maskPos.y]);
 
+  const updateMaskFromTouch = (touch) => {
+    if (!heroRef.current || !touch) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    setMaskPos({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    });
+  };
+
   const renderHeroCopy = (inverted = false, handlers = {}) => {
     const labelColor = inverted ? 'text-white/70' : 'text-gray-400';
     const headingColor = inverted ? 'text-white' : 'text-gray-900';
@@ -777,6 +786,15 @@ const Hero = ({ profile }) => {
       ref={heroRef}
       id="hero"
       className="relative h-screen overflow-hidden bg-white text-gray-900"
+      onTouchStart={(event) => {
+        setIsHovered(true);
+        updateMaskFromTouch(event.touches[0]);
+      }}
+      onTouchMove={(event) => {
+        updateMaskFromTouch(event.touches[0]);
+      }}
+      onTouchEnd={() => setIsHovered(false)}
+      onTouchCancel={() => setIsHovered(false)}
     >
       <motion.div
         className="absolute inset-0 pointer-events-none z-10"
