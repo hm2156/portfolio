@@ -72,10 +72,19 @@ const ProjectCard = ({ project, index, onSelect }) => {
   return (
     <article
       ref={cardRef}
-      className={`group rounded-3xl border border-white/12 bg-white/5 backdrop-blur overflow-hidden transition-all duration-500 ${
+      className={`group rounded-3xl border border-white/12 bg-white/5 backdrop-blur overflow-hidden transition-all duration-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
       }`}
       style={{ transitionDelay: `${index * 80}ms` }}
+      onClick={() => onSelect(project)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(project);
+        }
+      }}
     >
       <div className="flex flex-col">
         <div
@@ -147,7 +156,10 @@ const ProjectCard = ({ project, index, onSelect }) => {
               )}
             </div>
             <button
-              onClick={() => onSelect(project)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(project);
+              }}
               className="inline-flex items-center gap-1 text-white/80 hover:text-white"
             >
               <FileText size={16} /> Details
@@ -225,6 +237,11 @@ const ProjectDetail = ({ project, onBack }) => {
           {project.live && (
             <a href={project.live} target="_blank" rel="noopener noreferrer" className="hover:text-white">
               Live
+            </a>
+          )}
+          {project.caseStudyLink && (
+            <a href={project.caseStudyLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              Case study
             </a>
           )}
         </div>
@@ -318,6 +335,22 @@ const ProjectDetail = ({ project, onBack }) => {
                 <h3 className="hero-heading text-3xl font-semibold">{project.brandSummaryHeading || 'Tea House System'}</h3>
                 <p className="text-white/75 leading-relaxed">{project.brandSummary}</p>
               </div>
+            </section>
+          )}
+
+          {project.caseStudySections?.length > 0 && (
+            <section className="space-y-8">
+              {project.caseStudySections.map((section) => (
+                <div key={section.title} className="space-y-3">
+                  <p className="text-xs uppercase tracking-[0.45em] text-white/60 hero-heading">{section.badge || 'Case study'}</p>
+                  <h3 className="hero-heading text-2xl font-semibold">{section.title}</h3>
+                  <div className="space-y-3 text-white/75 leading-relaxed">
+                    {section.paragraphs.map((para) => (
+                      <p key={para.slice(0, 30)}>{para}</p>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </section>
           )}
 
@@ -611,17 +644,62 @@ const ProjectDetail = ({ project, onBack }) => {
   },
   {
     title: 'Reading the Room',
-    description: 'Presidential tweet analysis blending NLP, journalism, and tactile visualization.',
+    description: 'Presidential tweet analysis comparing Obama and Trump timelines using NLP and exploratory visualizations.',
     imageUrl: '/rtr.png',
-    tech: ['Python', 'VADER', 'D3.js', 'Observable'],
+    tech: ['Python', 'VADER', 'D3.js', 'Observable', 'Observable Framework'],
     github: 'https://github.com/cpreston123/readingtheroom',
     live: 'https://readingtheroom.info',
+    caseStudyLink: 'https://medium.com/@cpp2129/reading-the-room-3d67b0743d53',
     year: '2025',
     category: 'Dev',
     detailPoints: [
-      'VADER sentiment pipeline seeded from archival data',
-      'Observable notebooks for reproducible data storytelling',
-      'Comparative tone clustering across administrations',
+      'Analyzed 8 years of Obama + Trump tweets with VADER sentiment scoring and topic lookups',
+      'Built Observable visualizations for tone shifts over time plus country-specific mentions',
+      'Documented findings and related research in a long-form Medium case study',
+    ],
+    longDescription:
+      'Reading the Room is a comparative sentiment analysis of President Obama’s (2013–2017) and President Trump’s (2017–2021) Twitter archives. We wanted to understand how official messaging tone and subject ebb and flow with political and economic events, so we paired large-scale tweet scraping with VADER scoring, keyword lookups, and interactive Observable charts.',
+    caseStudySections: [
+      {
+        title: 'Introduction & Related Work',
+        badge: 'Medium excerpt',
+        paragraphs: [
+          'Twitter has become a primary venue for political communication, so we treated presidential tweets as signals for agenda, tone, and priority. We asked how shifts in language align with real political and economic events.',
+          'We drew inspiration from PoliTweet.org’s archives, Bloomberg’s coverage of market reactions to Trump’s tweets, Cornell’s data-viz studios, and numerous Medium walkthroughs on sentiment analysis with VADER. That prior art shaped both our methodology and storytelling goals.',
+        ],
+      },
+      {
+        title: 'Methodology',
+        paragraphs: [
+          'Twitter’s API limits kept us from collecting everything ourselves, so we combined two vetted datasets: Obama’s official tweets (2013–2017) and Trump’s (2017–2021). The identical four-year windows let us compare tone head-to-head.',
+          'After cleaning the data, we used VADER (Valence Aware Dictionary and sEntiment Reasoner) to calculate positive, neutral, negative, and compound scores for every tweet. We then appended counts of country mentions via lookup tables to empower geographic analysis.',
+        ],
+      },
+      {
+        title: 'Design',
+        paragraphs: [
+          'Our first visualization is a sentiment-over-time scatterplot with color-coded administrations, dot-size emphasis on search matches, and interactive keyword filters. We tested bar/area charts but they hid tweet-level nuance.',
+          'The second view is a country mention timeline that turns into a line chart when filtered to a single country. Throughout the site we added “how to explore” tips after classmates asked for clearer affordances.',
+        ],
+      },
+      {
+        title: 'Implementation',
+        paragraphs: [
+          'We built the experience in Observable Framework using D3/Plot. Data wrangling and scoring happened in Python; we cached processed datasets so interactions stayed responsive. The combination let us prototype quickly while keeping the client lightweight.',
+        ],
+      },
+      {
+        title: 'Discussion',
+        paragraphs: [
+          'Classmates appreciated the scale of the data and the clarity of the visual storytelling. The project made it easier to examine how tone shifts map to world events and what role language plays in political communication. The work also sharpened our approach to NLP + visualization handoffs.',
+        ],
+      },
+      {
+        title: 'Future Work',
+        paragraphs: [
+          'We plan to formalize statistical correlations between tone, topics, and events, and to run sentiment analyses by thematic groups (healthcare, economy, foreign policy) using topic models like BERTopic. Longer term, we’d like to embed those findings back into the visualization.',
+        ],
+      },
     ],
   },
   {
