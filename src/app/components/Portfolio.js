@@ -536,7 +536,7 @@ const ProjectDetail = ({ project, onBack }) => {
 
   const projects = [
     {
-    title: 'Qalam — Arabic Publishing Platform',
+    title: 'Qalam — قَلم',
     description:
       'Qalam is an Arabic-first writing and publishing platform inspired by classic literary salons. It combines a distraction-free editor, personalized feeds, and author tools tailored to right-to-left storytelling. The name “Qalam” nods to the Arabic word for pen—the original interface for ideas.',
     imageUrl: '/qalam-logo.png',
@@ -733,7 +733,7 @@ const Hero = ({ profile }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const effectiveHover = isMobile ? true : isHovered;
-  const size = effectiveHover ? (isMobile ? 420 : 320) : 100;
+  const size = effectiveHover ? (isMobile ? 260 : 320) : 80;
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -749,7 +749,7 @@ const Hero = ({ profile }) => {
   useEffect(() => {
     if (!heroRef.current || isMobile) return undefined;
     const rect = heroRef.current.getBoundingClientRect();
-    if (maskPos.x === 0 && maskPos.y === 0) {
+    if (!isMobile && maskPos.x === 0 && maskPos.y === 0) {
       setMaskPos({ x: rect.width * 0.35, y: rect.height * 0.4 });
     }
     let raf;
@@ -769,8 +769,8 @@ const Hero = ({ profile }) => {
       const rect = heroRef.current.getBoundingClientRect();
       const progress = Math.min(Math.max(-rect.top / rect.height, 0), 1);
       setMaskPos({
-        x: rect.width / 2,
-        y: rect.height * (0.35 + 0.3 * progress),
+        x: rect.width * 0.65,
+        y: rect.height * (0.5 + 0.25 * progress),
       });
     };
     handleScroll();
