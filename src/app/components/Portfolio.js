@@ -858,7 +858,7 @@ const Hero = ({ profile }) => {
         </div>
 
         <h1 className="hero-heading text-[16vw] sm:text-[10vw] font-semibold leading-[0.9] text-[#f7dfc4] drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-          Hi, I'm Huda
+          Hi, I&apos;m Huda
         </h1>
 
         <p className="text-white/70 text-base sm:text-lg max-w-2xl leading-relaxed">
