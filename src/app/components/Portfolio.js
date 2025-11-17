@@ -910,33 +910,32 @@ from distributed systems and backend architecture to interfaces that actually fe
 
 
 const CategoryToggle = ({ selected, onChange, counts }) => (
-// ... (CategoryToggle remains the same)
-  <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 p-1 text-sm font-medium backdrop-blur">
+  <div className="inline-flex items-center rounded-2xl border border-white/20 bg-white/10 p-1.5 text-base font-medium backdrop-blur">
     {['Dev', 'Design'].map((option) => {
       const active = selected === option;
       return (
         <button
           key={option}
           onClick={() => onChange(option)}
-          className={`relative px-4 py-1.5 transition-all ${
-            active ? 'text-black' : 'text-white/70'
+          className={`relative px-6 py-3 transition-all ${
+            active ? 'text-black' : 'text-white/70 hover:text-white'
           }`}
         >
           <span
-            className={`absolute inset-0 rounded-full transition ${
-              active ? 'bg-[#f7dfc4] text-black shadow-sm' : 'bg-transparent'
+            className={`absolute inset-0 rounded-xl transition ${
+              active ? 'bg-[#f7dfc4] text-black shadow-lg' : 'bg-transparent'
             }`}
           />
-          <span className="relative z-10 flex items-center gap-2">
+          <span className="relative z-10 flex items-center gap-2 font-semibold">
             {option}
-            <span className="text-xs">
+            <span className="text-sm opacity-80">
               {typeof counts[option] === 'number' ? counts[option] : 0}
             </span>
           </span>
         </button>
       );
     })}
-                    </div>
+  </div>
 );
 
 const Portfolio = () => {
@@ -987,13 +986,11 @@ const Portfolio = () => {
 
       <section id="projects" className="pt-30 pb-32 px-6 bg-black text-white">
         <div className="max-w-5xl mx-auto space-y-12">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-            <div className="space-y-3">
+          <div className="space-y-6">
+            <div className="space-y-4">
               <p className="text-sm uppercase tracking-[0.5em] text-[#f7dfc4]/70 hero-heading">Selected work</p>
-              <h2 className="hero-heading text-6xl sm:text-7xl font-semibold text-[#f7dfc4]">{selectedCategory} Projects</h2>
-                </div>
-            <div className="text-sm text-white">
               <CategoryToggle selected={selectedCategory} onChange={setSelectedCategory} counts={counts} />
+              <h2 className="hero-heading text-6xl sm:text-7xl font-semibold text-[#f7dfc4]">{selectedCategory} Projects</h2>
             </div>
           </div>
 
