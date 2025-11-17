@@ -1,5 +1,5 @@
 const ContactContent = ({ profile }) => (
-  <div className="bg-black text-white py-12 px-8 sm:px-16 h-full w-full flex flex-col justify-between">
+  <div className="bg-black text-white py-16 px-3 sm:px-15 lg:px-6 xl:px-30 h-full w-full flex flex-col justify-between">
     <div className="flex flex-col sm:flex-row justify-between gap-10">
       <div>
         <p className="uppercase text-sm tracking-[0.4em] text-white/60 mb-3">Contact</p>

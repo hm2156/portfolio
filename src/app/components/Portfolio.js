@@ -14,8 +14,6 @@ import {
   FileText,
   ChevronUp,
 } from 'lucide-react';
-import useMousePosition from '../utils/useMousePosition';
-import AboutSection from './AboutSection';
 import ContactSection from './ContactSection';
 
 const useIsVisible = (ref, threshold = 0.15) => {
@@ -55,7 +53,9 @@ const PillButton = ({ active = false, onClick, label, count }) => (
 const PillTag = ({ children, dark = false }) => (
                     <span 
     className={`px-2.5 py-1 text-xs rounded-full ${
-      dark ? 'border border-white/30 text-white/80' : 'border border-gray-200 text-gray-600'
+      dark
+        ? 'border border-[#f7dfc4]/40 text-[#f7dfc4]/90'
+        : 'border border-gray-200 text-gray-600'
     }`}
                     >
     {children}
@@ -267,6 +267,32 @@ const ProjectDetail = ({ project, onBack }) => {
             </PillTag>
           ))}
         </div>
+        {(project.github || project.live) && (
+          <div className="flex items-center gap-4 pt-2">
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+              >
+                <Github size={18} />
+                <span>GitHub</span>
+              </a>
+            )}
+            {project.live && (
+              <a
+                href={project.live}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+              >
+                <ExternalLink size={18} />
+                <span>Live Site</span>
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div
@@ -522,14 +548,14 @@ const ProjectDetail = ({ project, onBack }) => {
                           >
                             <ArrowRight size={18} />
                           </button>
-                        </div>
+                </div>
                         {feature.images.length > 1 && (
                           <p className="text-center text-xs uppercase tracking-[0.35em] text-white/60 mt-4">
                             {String((carouselIndex[feature.title] || 0) + 1).padStart(2, '0')} /{' '}
                             {String(feature.images.length).padStart(2, '0')}
                           </p>
                         )}
-                      </div>
+              </div>
                 </div>
                   );
                 })}
@@ -576,44 +602,46 @@ const ProjectDetail = ({ project, onBack }) => {
     {
     title: 'Qalam — قَلم',
     description:
-      'Qalam is an Arabic-first writing and publishing platform inspired by classic literary salons. It combines a distraction-free editor, personalized feeds, and author tools tailored to right-to-left storytelling. The name “Qalam” nods to the Arabic word for pen—the original interface for ideas.',
-    imageUrl: '/qalam-logo.png',
-    tech: ['Next.js', 'Tailwind CSS', 'Supabase', 'TipTap', 'Edge Functions'],
+      'A fully-fledged Arabic publishing pipeline engineered for performance, editorial control, and RTL-native authoring. The system combines Next.js ISR/SSR hybrid rendering with Supabase Postgres + RLS for secure, scalable content management, TipTap editor extensions for Arabic-first writing, and event-driven notifications via Brevo.',
+    imageUrl: '/banner1.png',
+    tech: ['Next.js', 'Supabase', 'PostgreSQL', 'TipTap', 'Brevo', 'Tailwind CSS'],
     year: '2025',
     category: 'Dev',
     live: 'https://qalamm.com/',
     github: 'https://github.com/hm2156/qalam',
     detailPoints: [
-      'Custom RTL-aware editor with drafting, autosave, and publishing flows',
-      'Personalized reading feed with follow graph + topic curation in Arabic',
-      'Author dashboards for notifications, profile curation, and analytics-lite stats',
+      'Extended TipTap with strict RTL defaults, Arabic-aware cursor behavior, and server-side draft validation for native Arabic writing experience',
+      'Stateful moderation pipeline: draft → pending_review → approve/reject workflow with versioned revisions, admin comments, and audit trails via Row-Level Security policies',
+      'Normalized social graph with follows, likes, and threaded comments, plus event-driven notification system queued through Brevo for non-blocking delivery',
+      'ISR/SSR hybrid rendering for fast article loads, optimized Postgres indexes for read-heavy workloads, and edge-rendered metadata for sharing previews',
     ],
     featureSections: [
       {
-        title: 'Explore & interact',
+        title: 'Arabic-First Editing Engine',
         description:
-          'A curated Arabic feed surfaces essays, poetry, and opinions with a typography system tuned for readability. Readers can like, comment, and follow authors directly from the stream.',
-        images: ['/qalam-expore.png', '/qalam-comments.png'],
-      },
-      {
-        title: 'Writing studio',
-        description:
-          'A TipTap-based editor respects RTL input, custom callouts, references, and in-line diacritics. Drafts autosave, and publishing includes tags, cover selection, and preview links.',
-        forceTextFirst: true,
+          'Most editors fail with Arabic because cursor movement, bidirectional text, and line-breaking patterns aren\'t handled correctly. I extended TipTap with strict RTL defaults across all nodes, custom text direction normalization, Arabic-aware selection/cursor behavior, autosave with debounced server writes, and server-side validation of draft content. This prevents corrupted text states and ensures that Arabic writing feels native at every interaction.',
         images: ['/qalam-publish.png'],
-      },
-      {
-        title: 'Author profiles & following',
-        description:
-          'Each writer gets a profile with featured pieces, social links, and a follow CTA. Readers can explore author libraries, follow them, and comment in-thread with rich text replies.',
-        images: ['/qalam-authorpagefollowwtc.png'],
-      },
-      {
-        title: 'Notifications & settings',
-        description:
-          'Author dashboards summarize reads, reactions, and follower growth. A settings hub lets writers tweak newsletters, notification cadence, and Arabic/English UI toggles.',
         forceTextFirst: true,
+      },
+      {
+        title: 'Moderation Pipeline & Policy Enforcement',
+        description:
+          'Qalam uses a stateful publishing workflow rather than simple flags. Each article moves through draft → pending_review (locked from further editing) → admin dashboard decision (approve → published, or reject → rejected with reviewer comments). The system implements role-protected admin routes via RLS + server actions, versioned article revisions for traceability, admin comments linked to specific drafts for full auditability, and rejection reasoning attached to the writer\'s dashboard with actionable feedback. This ensures editorial consistency, safety, and integrity.',
         images: ['/qalam-dashboard.png', '/qalam-profilesettings.png'],
+        forceTextFirst: true,
+      },
+      {
+        title: 'Social Graph & Event-Driven Notifications',
+        description:
+          'A normalized follows table models follower → author relationships with per-author notification preferences. Interactions are transactionally safe with unique constraints on likes to prevent duplicates, threaded comments with hierarchical parent IDs, and notification events generated on insert triggers via server actions. Policies + settings define who gets notified and when: authors get notified on new followers, followers get emailed on new published posts, and writers get alerts when their submissions are reviewed. All notifications are queued and sent via Brevo, ensuring non-blocking UI, resilient delivery, and structured templates for consistency.',
+        images: ['/qalam-expore.png', '/qalam-comments.png', '/qalam-authorpagefollowwtc.png'],
+      },
+      {
+        title: 'Infrastructure & Performance Architecture',
+        description:
+          'Qalam applies SSR for article pages (ideal for SEO and initial load), client-side hydration for interactivity (likes, comments, follow), edge-rendered metadata for sharing links and previews, optimized Postgres indexes on author_id, status, and created_at, and caching for anonymous readers to reduce DB load. The platform also implements RTL-aware CSS with logical properties, mirrored UI flows where necessary, Arabic numbers & formatting, custom typography tokens tuned for readability, and correct text shaping across browsers. This model scales well for read-heavy publishing platforms while ensuring a first-class Arabic reading and writing experience.',
+        images: ['/qalam-main.png'],
+        forceTextFirst: true,
       },
     ],
   },
@@ -724,17 +752,21 @@ const ProjectDetail = ({ project, onBack }) => {
     tech: ['Brand Identity', 'Graphic Design', 'Illustration', 'Adobe Illustrator'],
     category: 'Design',
     detailPoints: [
-      'Crafted a bilingual logo suite for packaging, retail, and merch',
-      'Codified palette + typography to balance warmth with premium cues',
-      'Documented iconography inspired by Hijazi architecture and glassware',
+      'Arabic Signature: Arabic-only logo with geometric letterforms inspired by Hijazi arches, balancing minimalism with cultural resonance',
+      'Brand Mark: A scalable, abstract symbol of the tea ritual (cup and architectural framing), anchoring the identity across all touchpoints',
+      'Iconography: Minimal illustrated elements (palm silhouettes, stylized mashrabiyyah) derived from Hijazi architecture, maintained by a cohesive stroke system',
+      'Color Palette: Comprehensive tones drawn from the red tea and warm Desert Sun environment, establishing a rich, grounded atmosphere',
+      'Typography: A balanced bilingual system pairing an expressive display serif for heritage with a clean grotesk for modern readability',
+      'Textile Patterns: Geometric compositions simplifying Hijazi mashrabiyyah screens, used for added cultural texture in packaging and merchandise',
+      'Premium Packaging: Tactile, warm presentation utilizing deep color fields and the Arabic logo as the focal point, reflecting the ritual of service',
     ],
     brandSummaryHeading: 'Khadrat Colombo',
     brandSummary:
-      'This brand identity was created to honor my mother’s cherished black-tea blend, transforming a family treasure into a heartfelt commercial brand. The design system draws deeply from Hijazi architectural elements—geometric patterns, warm earth tones, and the interplay of light and shadow—while the naming and storytelling reflect the personal heritage and hospitality at the brand’s core.',
+      'Khadrat Colombo is a brand identity created for my mother\'s signature red-tea blend, a homegrown recipe deeply tied to Hijazi hospitality and the rituals of serving tea to guests. I designed a complete visual system that translates this emotional world into a modern, culturally rooted brand—spanning logo, patterns, illustrations, packaging, color theory, and typography. The identity blends Hijazi architectural motifs, warm tea-house textures, and contemporary minimalism to create a brand that feels both handcrafted and premium.',
     brandMarkImage: '/brandmark.png',
     brandMarkBg: '#efbd80',
     heroImageBg: '#61181c',
-    colorPaletteTitle: 'Black Tea Tones',
+    colorPaletteTitle: 'Red Tea & Hijazi Palette',
     colorPalette: [
       {
         name: 'Mashrabiyyah Morning',
@@ -787,9 +819,9 @@ const ProjectDetail = ({ project, onBack }) => {
       { label: 'Pattern 01', src: '/pattern1.png' },
       { label: 'Pattern 02', src: '/patternmain.png' },
     ],
-    brandElementsHeading: 'Brand Elements – Inspired by Hijazi Architecture',
+    brandElementsHeading: 'Illustrated Elements & Iconography – Inspired by Hijazi Architecture',
     brandElements:
-      'Our icons reimagine the geometric patterns, arches, and palm motifs of traditional Hijazi architecture in a modern, minimal style. Each element reflects the warmth of our heritage—from carved mashrabiyyah panels to the iconic tea glass—telling a story of hospitality, community, and timeless flavor.',
+      'I designed a suite of illustrated elements inspired by Hijazi architecture and home rituals, reimagined through a minimal, modern lens. These include geometric palm motifs, mashrabiyyah-inspired linework, abstract arches and windows, and tea-related silhouettes. All elements share consistent stroke weights, curvature logic, and spacing systems so the identity remains cohesive across applications.',
     elementImages: ['/e1.png', '/e2.png', '/e3.png', '/e4.png', '/e5.png', '/e6.png', '/e7.png', '/e8.png', '/e9.png', '/e10.png', '/e11.png'],
   },
   ];
@@ -810,152 +842,64 @@ const ProjectDetail = ({ project, onBack }) => {
 ];
 
 const Hero = ({ profile }) => {
-  const heroRef = useRef(null);
-  const { x = 0, y = 0 } = useMousePosition();
-  const [maskPos, setMaskPos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const effectiveHover = isMobile ? true : isHovered;
-  const size = effectiveHover ? (isMobile ? 260 : 320) : 80;
+  const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const check = () => {
-      const coarse = window.matchMedia('(pointer: coarse)').matches;
-      setIsMobile(coarse || window.innerWidth <= 768);
-    };
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  useEffect(() => {
-    if (!heroRef.current || isMobile) return undefined;
-    const rect = heroRef.current.getBoundingClientRect();
-    if (!isMobile && maskPos.x === 0 && maskPos.y === 0) {
-      setMaskPos({ x: rect.width * 0.35, y: rect.height * 0.4 });
-    }
-    let raf;
-    const update = () => {
-      setMaskPos({
-        x: x - rect.left,
-        y: y - rect.top,
-      });
-    };
-    raf = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(raf);
-  }, [x, y, maskPos.x, maskPos.y, isMobile]);
-
-  useEffect(() => {
-    if (!isMobile || !heroRef.current) return undefined;
-    const handleScroll = () => {
-      const rect = heroRef.current.getBoundingClientRect();
-      const progress = Math.min(Math.max(-rect.top / rect.height, 0), 1);
-      setMaskPos({
-        x: rect.width * 0.65,
-        y: rect.height * (0.5 + 0.25 * progress),
-      });
-    };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMobile]);
-
-  const updateMaskFromTouch = (touch) => {
-    if (!heroRef.current || !touch) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    setMaskPos({
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top,
-    });
-  };
-
-  const renderHeroCopy = (inverted = false, handlers = {}) => {
-    const labelColor = inverted ? 'text-white/70' : 'text-gray-400';
-    const headingColor = inverted ? 'text-white' : 'text-gray-900';
-    const bodyColor = inverted ? 'text-white/80' : 'text-gray-600';
     return (
-      <div className={`space-y-6 ${inverted ? 'mix-blend-difference text-white' : ''}`} {...handlers}>
-        <div className={`flex items-center gap-3 text-sm uppercase tracking-[0.3em] font-medium ${inverted ? 'text-white/80' : 'text-gray-700'}`}>
-          <span>Portfolio</span>
-          <span>•</span>
-          <span>{new Date().getFullYear()}</span>
-        </div>
-        <p className={`text-sm uppercase tracking-[0.4em] font-medium ${labelColor}`}>Huda Marta</p>
-        <h1 className={`hero-heading text-6xl sm:text-7xl lg:text-8xl font-semibold leading-tight max-w-4xl ${headingColor}`}>
-          Hi, I&apos;m Huda.
-        </h1>
-        <p className={`text-lg sm:text-xl max-w-3xl leading-relaxed ${bodyColor}`}>
-          I&apos;m a developer who sometimes designs, or maybe a designer who won&apos;t stop coding. Either way, here&apos;s some of my work.
-        </p>
-      </div>
-    );
-  };
-
-  return (
     <section
-      ref={heroRef}
       id="hero"
-      className="relative h-screen overflow-hidden bg-white text-gray-900"
-      onTouchStart={
-        isMobile
-          ? undefined
-          : (event) => {
-              event.preventDefault();
-              setIsHovered(true);
-              updateMaskFromTouch(event.touches[0]);
-            }
-      }
-      onTouchMove={
-        isMobile
-          ? undefined
-          : (event) => {
-              event.preventDefault();
-              updateMaskFromTouch(event.touches[0]);
-            }
-      }
-      onTouchEnd={isMobile ? undefined : () => setIsHovered(false)}
-      onTouchCancel={isMobile ? undefined : () => setIsHovered(false)}
+      className="relative min-h-screen bg-black text-white flex flex-col justify-center overflow-hidden px-6 sm:px-10"
     >
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-10"
-        style={{ 
-          backgroundColor: '#050505',
-          WebkitMaskImage: "url('/mask.svg')",
-          maskImage: "url('/mask.svg')",
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat',
-        }}
-        animate={{
-          WebkitMaskPosition: `${maskPos.x - size / 2}px ${maskPos.y - size / 2}px`,
-          maskPosition: `${maskPos.x - size / 2}px ${maskPos.y - size / 2}px`,
-          WebkitMaskSize: `${size}px`,
-          maskSize: `${size}px`,
-        }}
-        transition={{ type: 'tween', ease: 'backOut', duration: 0.4 }}
-        aria-hidden="true"
-      >
-        <div className="absolute inset-0 flex items-center justify-center px-6">
-          <div className="max-w-5xl w-full">
-            {renderHeroCopy(true)}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.08)_0%,_rgba(0,0,0,1)_70%)]" />
+
+      <div className="relative z-10 max-w-5xl mx-auto w-full space-y-10">
+        <div className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.5em] text-white/50">{currentYear} — Portfolio</p>
+          <p className="text-sm uppercase tracking-[0.35em] text-white/60">Huda Marta</p>
+        </div>
+
+        <h1 className="hero-heading text-[16vw] sm:text-[10vw] font-semibold leading-[0.9] text-[#f7dfc4] drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+          Hi, I'm Huda
+        </h1>
+
+        <p className="text-white/70 text-base sm:text-lg max-w-2xl leading-relaxed">
+        I build things somewhere between engineering and design —
+from distributed systems and backend architecture to interfaces that actually feel good to use.
+          </p>
+
+        <div className="flex gap-5 pt-6 text-white/70">
+          <a
+            href={profile.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+            aria-label="GitHub"
+          >
+            <Github size={22} />
+          </a>
+          <a
+            href={profile.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+            aria-label="LinkedIn"
+          >
+            <Linkedin size={22} />
+          </a>
+          <a
+            href={`mailto:${profile.email}`}
+            className="hover:text-white transition-colors"
+            aria-label="Email"
+          >
+            <Mail size={22} />
+          </a>
           </div>
         </div>
-      </motion.div>
 
-      <div className="absolute inset-0 flex items-center justify-center px-6">
-        <div className="max-w-5xl w-full">
-          {renderHeroCopy(false, {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
-          })}
-        </div>
-          </div>
-
-      <div className="absolute bottom-10 inset-x-0 z-10 flex justify-center">
+      <div className="absolute bottom-10 inset-x-0 flex justify-center">
               <button 
-          onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-          className="text-gray-500 hover:text-gray-900 animate-bounce"
-          aria-label="Scroll to about"
+          onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+          className="text-white/60 hover:text-white animate-bounce"
+          aria-label="Scroll to projects"
               >
           <ChevronDown size={32} />
               </button>
@@ -980,7 +924,7 @@ const CategoryToggle = ({ selected, onChange, counts }) => (
         >
           <span
             className={`absolute inset-0 rounded-full transition ${
-              active ? 'bg-white text-black shadow-sm' : 'bg-transparent'
+              active ? 'bg-[#f7dfc4] text-black shadow-sm' : 'bg-transparent'
             }`}
           />
           <span className="relative z-10 flex items-center gap-2">
@@ -1005,6 +949,7 @@ const Portfolio = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('Dev');
   const [selectedProject, setSelectedProject] = useState(null);
+  const otherCarouselRef = useRef(null);
 
   const counts = projects.reduce((acc, curr) => {
     acc[curr.category] = (acc[curr.category] || 0) + 1;
@@ -1012,34 +957,154 @@ const Portfolio = () => {
   }, {});
 
   const filtered = projects.filter((p) => p.category === selectedCategory);
+  const featuredMap = {
+    Dev: 'Qalam — قَلم',
+    Design: 'Khadrat Colombo Brand Identity',
+  };
+  const featuredProject = projects.find(
+    (p) => p.title === featuredMap[selectedCategory]
+  );
+  const nonFeatured = featuredProject
+    ? filtered.filter((p) => p.title !== featuredProject.title)
+    : filtered;
+
+  const scrollOtherCarousel = (direction) => {
+    if (!otherCarouselRef.current) return;
+    const amount = otherCarouselRef.current.offsetWidth || 400;
+    otherCarouselRef.current.scrollBy({
+      left: direction * amount,
+      behavior: 'smooth',
+    });
+  };
 
   if (selectedProject) {
     return <ProjectDetail project={selectedProject} onBack={() => setSelectedProject(null)} />;
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-black text-white">
       <Hero profile={profile} />
 
-      <AboutSection />
-
-      <section id="projects" className="pt-40 pb-32 px-6 bg-black text-white">
-        <div className="max-w-6xl mx-auto space-y-12">
+      <section id="projects" className="pt-30 pb-32 px-6 bg-black text-white">
+        <div className="max-w-5xl mx-auto space-y-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.5em] text-white/60 hero-heading">Selected work</p>
-              <h2 className="hero-heading text-6xl sm:text-7xl font-semibold">{selectedCategory} Projects</h2>
+              <p className="text-sm uppercase tracking-[0.5em] text-[#f7dfc4]/70 hero-heading">Selected work</p>
+              <h2 className="hero-heading text-6xl sm:text-7xl font-semibold text-[#f7dfc4]">{selectedCategory} Projects</h2>
                 </div>
             <div className="text-sm text-white">
               <CategoryToggle selected={selectedCategory} onChange={setSelectedCategory} counts={counts} />
             </div>
           </div>
 
-          <div className="grid gap-12">
+              {featuredProject && (
+            <div className="hidden lg:block">
+              <button
+                type="button"
+                onClick={() => setSelectedProject(featuredProject)}
+                className="group w-full text-left"
+                aria-label={`View ${featuredProject.title} details`}
+              >
+                <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/5">
+                  <div className="grid grid-cols-[1.1fr,0.9fr] gap-8 items-center p-10">
+                    <div className="space-y-5">
+                      <span className="inline-flex items-center gap-2 text-base uppercase tracking-[0.45em] text-[#f7dfc4] font-semibold hero-heading">
+                        Featured
+                      </span>
+                      <h3 className="hero-heading text-3xl font-semibold">{featuredProject.title}</h3>
+                      <p className="text-white/75 leading-relaxed max-w-2xl">
+                        {featuredProject.description}
+                      </p>
+                      <div className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.35em] text-[#f7dfc4]">
+                        <span className="rounded-full border border-[#f7dfc4]/30 px-3 py-1 bg-[#f7dfc4]/10 group-hover:bg-[#f7dfc4]/20 transition">
+                          View details
+                        </span>
+                        <ArrowRight size={16} className="text-[#f7dfc4]" />
+                      </div>
+                    </div>
+                    <div className={`relative w-full h-[340px] rounded-2xl border border-white/10 overflow-hidden ${
+                      featuredProject.title?.toLowerCase().includes('qalam') 
+                        ? 'bg-white' 
+                        : featuredProject.title?.toLowerCase().includes('khadrat')
+                        ? 'bg-[#61181c]'
+                        : 'bg-white/5'
+                    }`}>
+                      <Image
+                        src={featuredProject.imageUrl}
+                        alt={featuredProject.title}
+                        fill
+                        className="object-contain p-6 transition-transform duration-500 group-hover:scale-[1.02]"
+                      />
+                      <span className={`pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.35em] uppercase opacity-0 group-hover:opacity-100 transition ${
+                        featuredProject.title?.toLowerCase().includes('qalam')
+                          ? 'text-gray-700'
+                          : 'text-white/70'
+                      }`}>
+                        Click to view
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Mobile/Tablet list (grid) */}
+          <div className="grid gap-12 lg:hidden">
             {filtered.map((project, index) => (
-              <ProjectCard key={project.title} project={project} index={index} onSelect={setSelectedProject} />
+              <ProjectCard
+                key={project.title}
+                project={project}
+                index={index}
+                onSelect={setSelectedProject}
+              />
             ))}
           </div>
+
+          {/* Large-screen horizontal carousel for other selected work */}
+          {nonFeatured.length > 0 && (
+            <div className="relative hidden lg:block">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xl uppercase tracking-[0.35em] text-white hero-heading font-semibold">
+                  Other selected work
+                </p>
+                <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                    onClick={() => scrollOtherCarousel(-1)}
+                    className="p-3 rounded-full border border-white/20 text-white/80 hover:text-white bg-black/40"
+                          aria-label="Scroll previous projects"
+                        >
+                          <ArrowLeft size={18} />
+                        </button>
+                        <button
+                          type="button"
+                    onClick={() => scrollOtherCarousel(1)}
+                    className="p-3 rounded-full border border-white/20 text-white/80 hover:text-white bg-black/40"
+                          aria-label="Scroll next projects"
+                        >
+                          <ArrowRight size={18} />
+                        </button>
+                </div>
+              </div>
+                    <div
+                ref={otherCarouselRef}
+                className="flex gap-6 overflow-x-auto snap-x snap-mandatory pr-4 pb-4 [&::-webkit-scrollbar]:hidden"
+                      style={{ scrollbarWidth: 'none' }}
+                aria-label="Other selected projects carousel"
+              >
+                {nonFeatured.map((project, index) => (
+                  <div key={project.title} className="min-w-[560px] snap-start">
+                              <ProjectCard
+                                project={project}
+                                index={index}
+                                onSelect={setSelectedProject}
+                              />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
         </div>
       </section>
 
