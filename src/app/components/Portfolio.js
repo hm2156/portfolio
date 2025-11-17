@@ -984,13 +984,14 @@ const Portfolio = () => {
     <div className="min-h-screen bg-black text-white">
       <Hero profile={profile} />
 
-      <section id="projects" className="pt-30 pb-32 px-6 bg-black text-white">
+      <section id="projects" className="pt-25 pb-32 px-6 bg-black text-white">
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="space-y-6">
             <div className="space-y-4">
               <p className="text-sm uppercase tracking-[0.5em] text-[#f7dfc4]/70 hero-heading">Selected work</p>
               <CategoryToggle selected={selectedCategory} onChange={setSelectedCategory} counts={counts} />
               <h2 className="hero-heading text-6xl sm:text-7xl font-semibold text-[#f7dfc4]">{selectedCategory} Projects</h2>
+              <p className="text-sm uppercase tracking-[2em] text-[#f7dfc4]/70 hero-heading font-boldpt-2">Click on project for more details</p>
             </div>
           </div>
 
