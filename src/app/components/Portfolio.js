@@ -646,6 +646,48 @@ const ProjectDetail = ({ project, onBack }) => {
     ],
   },
   {
+    title: 'AlphaWatch',
+    description:
+      'ML-powered market risk intelligence platform that monitors 20 major stocks in real time. Uses Isolation Forest anomaly detection to flag unusual behavior and LightGBM quantile regression to predict tomorrow\'s closing price as a confidence range (10th / 50th / 90th percentile). Trained on 3 years of daily OHLCV data with verified leakage prevention across 8 independent checks.',
+    imageUrl: '/alphawatch-cover3.png',
+    tech: ['Python', 'LightGBM', 'scikit-learn', 'Streamlit', 'Plotly', 'yfinance', 'Docker'],
+    year: '2026',
+    category: 'Dev',
+    github: 'https://github.com/hm2156/stock-risk-dashboard',
+    live: 'https://alphawatch.streamlit.app',
+    detailPoints: [
+      'Isolation Forest anomaly detection per ticker — fitted on training data only, validated against real market events. Every flagged date in validation mapped to a real, explainable event (earnings surprises, macro shocks, Fed decisions)',
+      '3 separate LightGBM models per ticker optimized for the 10th, 50th, and 90th percentile — outputs a price confidence range rather than a single point estimate, with quantile crossing fixed via post-processing enforcement',
+      'Predicts next-day return (not raw price) to handle regime changes across market environments — fixed worst-case val coverage from 0% to 63%+ across tickers that underwent significant price regime changes (META, MSFT, COST)',
+      '21 engineered features from raw OHLCV data spanning returns, volatility, momentum (RSI), volume anomaly scoring, price lags, moving average distances, intraday range, and calendar signals',
+      'Leakage prevention verified with 8 independent checks — zero overlap across train/val/test splits, target return alignment confirmed across 5 spot checks, lag features verified against raw closes, scaler and anomaly model fitted on train only',
+      'Avg val coverage of 74.5% across 20 tickers — actual prices landed inside the predicted band 74.5% of the time on unseen data. Best: AMZN 87.7%, CVX 84.9%, MSFT 80.1%',
+      'Live Streamlit dashboard with 3 pages — portfolio overview with real-time risk scores, per-ticker detail with price vs prediction band chart and feature importance, and portfolio analytics with correlation heatmap and sector risk breakdown',
+    ],
+    featureSections: [
+      {
+        title: 'Risk scoring — Isolation Forest',
+        description:
+          'Each ticker gets a daily risk score (0–100) computed by an Isolation Forest model trained on 21 features. The model identifies days that are statistically isolated from normal trading patterns — volume spikes, volatility surges, RSI extremes. Validated by mapping every HIGH-risk flag in the val set to a real market event.',
+        images: ['/alphawatch-risk.png'],
+        forceTextFirst: true,
+      },
+      {
+        title: 'Price prediction — LightGBM quantile regression',
+        description:
+          'Three separate LightGBM models per ticker — one each for the 10th, 50th, and 90th percentile — output a next-day price confidence range. Trained on next-day return rather than raw price to generalize across price regimes. Quantile crossing fixed post-inference. Average val coverage of 74.5% across 20 tickers.',
+        images: ['/alphawatch-prediction.png'],
+      },
+      {
+        title: 'Portfolio analytics',
+        description:
+          'Full portfolio view with a Pearson correlation heatmap across all 20 tickers, sector-level risk aggregation, historical anomaly frequency per ticker, and model performance comparison (MAE + coverage). Built to surface diversification gaps and identify which positions carry the most model uncertainty.',
+        images: ['/alphawatch-analytics.png'],
+        forceTextFirst: true,
+      },
+    ],
+  },
+  {
     title: 'DNS Explorer',
     description: 'Interactive DNS resolver visualizer bridging infrastructure and education with real-time storytelling.',
     imageUrl: '/dns5.png',
